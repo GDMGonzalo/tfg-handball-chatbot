@@ -8,8 +8,8 @@ El proyecto parte de la aplicación base *handballAnalytics*, proporcionada por 
 
 * `app-tfg/`: código principal de la aplicación.
 * `app-tfg/app/`: aplicación Flask.
-* `app-tfg/app/services/`: servicios principales de la aplicación, incluyendo los módulos del chatbot.
-* `app-tfg/app/routes/`: rutas de la aplicación web.
+* `app-tfg/app/services/`: servicios principales de la aplicación, incluyendo los módulos lógicos del chatbot.
+* `app-tfg/app/routes/`: rutas de la aplicación web, incluyendo la ruta del chatbot.
 * `app-tfg/app/templates/`: plantillas HTML.
 * `app-tfg/app/static/`: recursos estáticos.
 * `app-tfg/restore.sql`: script SQL de restauración/base de datos utilizado en el proyecto.
@@ -24,10 +24,14 @@ La aplicación base *handballAnalytics* fue proporcionada por los tutores del TF
 
 La contribución principal de este TFG corresponde al diseño, implementación e integración del chatbot estadístico dentro de *handballAnalytics*.
 
-Los archivos principales desarrollados o modificados se encuentran en:
+Los archivos principales desarrollados o modificados son:
 
 ```text
-app-tfg/app/services/
+app-tfg/app/services/chatbot_service.py
+app-tfg/app/services/chatbot_parser.py
+app-tfg/app/services/chatbot_queries.py
+app-tfg/app/services/chatbot_slm.py
+app-tfg/app/routes/chatbot_routes.py
 ```
 
 En concreto:
@@ -36,7 +40,7 @@ En concreto:
 * `chatbot_parser.py`: normaliza el texto y detecta equipos, jugadores, contexto y errores tipográficos leves.
 * `chatbot_queries.py`: contiene las consultas SQL para obtener estadísticas, rankings, zonas de tiro y datos de jugadores.
 * `chatbot_slm.py`: gestiona la comunicación con el modelo de lenguaje local ejecutado mediante Ollama.
-* - `chatbot_routes.py`: define las rutas Flask del módulo de chatbot, muestra la interfaz y expone el endpoint que recibe la pregunta del usuario y devuelve la respuesta generada.
+* `chatbot_routes.py`: define las rutas Flask del módulo de chatbot, muestra la interfaz y expone el endpoint que recibe la pregunta del usuario y devuelve la respuesta generada.
 
 ## Funcionalidades del chatbot
 
@@ -54,13 +58,13 @@ El chatbot permite realizar consultas en lenguaje natural sobre:
 Ejemplos de consultas soportadas:
 
 ```text
-¿Cuántas victorias tiene X equipo?
+¿Cuántas victorias tiene Málaga?
 Dame los 3 jugadores con más goles.
 Dame los 5 equipos con más goles recibidos.
 Dame los 5 equipos con menos goles anotados.
 ¿Qué equipo tira más desde 6m?
-Distribución de tiro de X equipo.
-¿Cuántas asistencias tiene X jugador?
+Distribución de tiro de Málaga.
+¿Cuántas asistencias tiene Carlos Montes?
 ```
 
 ## Tecnologías principales
