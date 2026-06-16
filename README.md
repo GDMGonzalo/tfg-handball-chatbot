@@ -26,8 +26,9 @@ La contribución principal de este TFG corresponde al diseño, implementación e
 
 Los archivos principales desarrollados o modificados se encuentran en:
 
+```text
 app-tfg/app/services/
-
+```
 
 En concreto:
 
@@ -51,15 +52,15 @@ El chatbot permite realizar consultas en lenguaje natural sobre:
 
 Ejemplos de consultas soportadas:
 
-
-¿Cuántas victorias tiene X?
+```text
+¿Cuántas victorias tiene Málaga?
 Dame los 3 jugadores con más goles.
 Dame los 5 equipos con más goles recibidos.
 Dame los 5 equipos con menos goles anotados.
 ¿Qué equipo tira más desde 6m?
-Distribución de tiro de X.
-¿Cuántas asistencias tiene X?
-
+Distribución de tiro de Málaga.
+¿Cuántas asistencias tiene Carlos Montes?
+```
 
 ## Tecnologías principales
 
