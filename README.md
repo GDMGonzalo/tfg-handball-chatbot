@@ -36,6 +36,7 @@ En concreto:
 * `chatbot_parser.py`: normaliza el texto y detecta equipos, jugadores, contexto y errores tipográficos leves.
 * `chatbot_queries.py`: contiene las consultas SQL para obtener estadísticas, rankings, zonas de tiro y datos de jugadores.
 * `chatbot_slm.py`: gestiona la comunicación con el modelo de lenguaje local ejecutado mediante Ollama.
+* - `chatbot_routes.py`: define las rutas Flask del módulo de chatbot, muestra la interfaz y expone el endpoint que recibe la pregunta del usuario y devuelve la respuesta generada.
 
 ## Funcionalidades del chatbot
 
