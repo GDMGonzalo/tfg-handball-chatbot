@@ -1,0 +1,67 @@
+/* Estilos para modales de confirmación */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #f8f9fa;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid #f0f0f0;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+  
+  .warning-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(255, 193, 7, 0.1);
+    margin: 0 auto;
+  }
+  
+  .warning-icon i {
+    color: #ffc107;
+  }
+  
+  #confirmDeleteMessage {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+  
+  .modal-footer .btn {
+    min-width: 120px;
+    border-radius: 5px;
+    font-weight: 500;
+  }
+  
+  .modal-footer .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  .modal-footer .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+  
+  .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+  
+  .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+  }
+  

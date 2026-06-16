@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Videos - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+   <div>
+       <h1>Videos</h1>
+       <p>Gestiona tus videos deportivos</p>
+   </div>
+</div>
+
+<!-- Filtros -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-filter"></i> Filtros</h3>
+   </div>
+   <div class="section-body">
+       <form method="GET" action="/{{ username }}/videos" class="filter-form">
+           <div class="form-row">
+               <div class="form-group col-md-3">
+                   <label for="temporada_id"><i class="fas fa-calendar-alt"></i> Temporada:</label>
+                   <select name="temporada_id" id="temporada_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for temporada in temporadas %}
+                           <option value="{{ temporada.id }}" {% if temporada_id and temporada.id == temporada_id|int %}selected{% endif %}>
+                               {{ temporada.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3">
+                   <label for="partido_id"><i class="fas fa-futbol"></i> Partido:</label>
+                   <select name="partido_id" id="partido_id" class="form-control">
+                       <option value="">Todos</option>
+                       {% for partido in partidos %}
+                           <option value="{{ partido.id }}" {% if partido_id and partido.id == partido_id|int %}selected{% endif %}>
+                               {{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }} ({{ partido.fecha_hora.strftime('%d/%m/%Y') }})
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3">
+                   <label for="equipo_id"><i class="fas fa-users"></i> Equipo:</label>
+                   <select name="equipo_id" id="equipo_id" class="form-control">
+                       <option value="">Todos</option>
+                       {% for equipo in equipos %}
+                           <option value="{{ equipo.id }}" {% if equipo_id and equipo.id == equipo_id|int %}selected{% endif %}>
+                               {{ equipo.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3 d-flex align-items-end">
+                   <button type="submit" class="btn btn-primary mr-2"><i class="fas fa-search"></i> Filtrar</button>
+                   <a href="/{{ username }}/videos" class="btn btn-secondary"><i class="fas fa-undo"></i> Restablecer</a>
+               </div>
+           </div>
+       </form>
+   </div>
+</div>
+
+<!-- Listado de videos -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-video"></i> Mis Videos</h3>
+       <div class="section-actions">
+           <a href="/{{ username }}/eventos-personalizados" class="btn btn-outline-primary">
+               <i class="fas fa-cogs"></i> Gestionar Eventos
+           </a>
+       </div>
+   </div>
+   <div class="section-body">
+       {% if videos %}
+       <div class="videos-grid">
+           {% for video in videos %}
+           <div class="video-card">
+               <a href="/{{ username }}/video/{{ video.id }}">
+                   {% set liga_path = "liga_" + video.partido.liga.id|string if video.partido.liga else "sin_liga" %}
+                   <img src="/uploads/{{ username }}/temporada_{{ video.partido.temporada.id }}/{{ liga_path }}/partido_{{ video.partido_id }}/{{ video.filename|replace('.mp4', '_thumb.jpg') }}" 
+                        alt="Miniatura de {{ video.filename }}">
+               </a>
+               <div class="video-info">
+                   <h4>{{ video.filename }}</h4>
+                   <p><i class="fas fa-futbol"></i> {{ video.partido.equipo_local.nombre }} {{ video.partido.resultado }} {{ video.partido.equipo_visitante.nombre }}</p>
+                   <p><i class="fas fa-clock"></i> {{ video.duracion_segundos // 60 }}:{{ '%02d' % (video.duracion_segundos % 60) }}</p>
+                   <p><i class="fas fa-calendar-day"></i> {{ video.uploaded_at.strftime('%d/%m/%Y') }}</p>
+                   <div class="video-actions">
+                       <a href="/{{ username }}/video/{{ video.id }}" class="btn btn-view btn-sm">
+                           <i class="fas fa-eye"></i> <span>Ver</span>
+                       </a>
+                       <a href="/{{ username }}/video/{{ video.id }}/configurar-eventos" class="btn btn-config btn-sm">
+                           <i class="fas fa-cog"></i> <span>Eventos</span>
+                       </a>
+                       <button type="button" class="btn btn-delete btn-sm" onclick="confirmarEliminar('{{ video.id }}', '{{ video.filename }}')">
+                           <i class="fas fa-trash"></i> <span>Eliminar</span>
+                       </button>
+                   </div>
+               </div>
+           </div>
+           {% endfor %}
+       </div>
+       {% else %}
+       <div class="empty-state">
+           <i class="fas fa-video"></i>
+           <h3>No hay videos</h3>
+           <p>Sube videos a tus partidos para analizarlos</p>
+       </div>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+               </button>
+           </div>
+           <div class="modal-body">
+               <p>¿Estás seguro de que quieres eliminar el video <strong id="video-nombre"></strong>?</p>
+               <p class="text-danger">Esta acción eliminará también todos los eventos asociados a este video.</p>
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+               <form id="form-eliminar" method="POST">
+                   <button type="submit" class="btn btn-danger">Eliminar</button>
+               </form>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+   function confirmarEliminar(id, nombre) {
+       document.getElementById('video-nombre').textContent = nombre;
+       document.getElementById('form-eliminar').action = '/{{ username }}/video/' + id + '/eliminar';
+       $('#eliminarModal').modal('show');
+   }
+</script>
+
+<style>
+   .videos-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+       gap: 25px;
+   }
+   
+   .video-card {
+       background-color: #f8f9fa;
+       border-radius: 8px;
+       overflow: hidden;
+       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+       transition: transform 0.3s ease, box-shadow 0.3s ease;
+   }
+   
+   .video-card:hover {
+       transform: translateY(-5px);
+       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+   }
+   
+   .video-card img {
+       width: calc(100% - 20px);
+       height: 180px;
+       object-fit: cover;
+       margin: 10px;
+       border-radius: 6px;
+   }
+   
+   .video-info {
+       padding: 15px;
+   }
+   
+   .video-info h4 {
+       font-size: 1rem;
+       margin-bottom: 0.5rem;
+       white-space: nowrap;
+       overflow: hidden;
+       text-overflow: ellipsis;
+   }
+   
+   .video-info p {
+       margin: 0 0 3px 0;
+       font-size: 0.85rem;
+       color: #666;
+   }
+   
+   .video-actions {
+       display: flex;
+       justify-content: space-between;
+       margin-top: 12px;
+       gap: 6px;
+   }
+   
+   .video-actions .btn {
+       flex: 1;
+       font-size: 0.8rem;
+       padding: 6px 8px;
+       min-height: 32px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+   }
+
+   .btn-config {
+       background-color: #17a2b8;
+       color: white;
+       border: 1px solid #17a2b8;
+   }
+
+   .btn-config:hover {
+       background-color: #138496;
+       border-color: #117a8b;
+       color: white;
+   }
+
+   .section-header {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       margin-bottom: 1rem;
+   }
+
+   .section-actions .btn {
+       margin-left: 10px;
+   }
+
+   @media (max-width: 768px) {
+       .videos-grid {
+           grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+           gap: 20px;
+       }
+       
+       .video-actions .btn span {
+           display: none;
+       }
+       
+       .video-actions .btn {
+           min-width: 40px;
+           padding: 8px;
+       }
+   }
+
+   @media (max-width: 576px) {
+       .videos-grid {
+           grid-template-columns: 1fr;
+       }
+       
+       .video-actions .btn span {
+           display: inline;
+       }
+       
+       .video-actions {
+           flex-direction: column;
+           gap: 8px;
+       }
+       
+       .video-actions .btn {
+           width: 100%;
+       }
+   }
+</style>
+{% endblock %}

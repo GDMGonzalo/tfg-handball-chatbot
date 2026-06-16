@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Equipos - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+   <div>
+       <h1>Equipos</h1>
+       <p>Gestiona tus equipos deportivos</p>
+   </div>
+   <div>
+       <a href="/{{ username }}/equipos/nuevo" class="btn btn-primary">
+           <i class="fas fa-plus"></i> Nuevo Equipo
+       </a>
+   </div>
+</div>
+
+<!-- Filtros -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-filter"></i> Filtros</h3>
+   </div>
+   <div class="section-body">
+       <form method="GET" action="/{{ username }}/equipos" class="filter-form">
+           <div class="form-row">
+               <div class="form-group col-md-4">
+                   <label for="liga_id"><i class="fas fa-trophy"></i> Liga:</label>
+                   <select name="liga_id" id="liga_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for liga in ligas %}
+                           <option value="{{ liga.id }}" {% if liga_id and liga.id == liga_id|int %}selected{% endif %}>
+                               {{ liga.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-4">
+                   <label for="tipo"><i class="fas fa-venus-mars"></i> Tipo:</label>
+                   <select name="tipo" id="tipo" class="form-control">
+                       <option value="">Todos</option>
+                       <option value="masculino" {% if tipo == 'masculino' %}selected{% endif %}>Masculino</option>
+                       <option value="femenino" {% if tipo == 'femenino' %}selected{% endif %}>Femenino</option>
+                       <option value="mixto" {% if tipo == 'mixto' %}selected{% endif %}>Mixto</option>
+                   </select>
+               </div>
+               <div class="form-group col-md-4 d-flex align-items-end">
+                   <button type="submit" class="btn btn-primary mr-2"><i class="fas fa-search"></i> Filtrar</button>
+                   <a href="/{{ username }}/equipos" class="btn btn-secondary"><i class="fas fa-undo"></i> Restablecer</a>
+               </div>
+           </div>
+       </form>
+   </div>
+</div>
+
+<!-- Listado de equipos -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-users"></i> Mis Equipos</h3>
+   </div>
+   <div class="section-body">
+       {% if equipos_con_ligas %}
+       <div class="table-responsive">
+           <table class="table">
+               <thead>
+                   <tr>
+                       <th>Nombre</th>
+                       <th>Tipo</th>
+                       <th>Ligas</th>
+                       <th>Jugadores</th>
+                       <th>Acciones</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for item in equipos_con_ligas %}
+                       {% set equipo = item.equipo %}
+                       {% if not tipo or equipo.tipo == tipo %}
+                       <tr>
+                           <td>{{ equipo.nombre }}</td>
+                           <td>{{ equipo.tipo|capitalize }}</td>
+                           <td>
+                               {% if item.ligas %}
+                                   <div class="badge-container">
+                                       {% for liga in item.ligas %}
+                                           <span class="badge badge-primary">{{ liga.nombre }}</span>
+                                       {% endfor %}
+                                   </div>
+                               {% else %}
+                                   <span class="text-muted">No participa en ligas</span>
+                               {% endif %}
+                           </td>
+                           <td>{{ equipo.jugadores|length }}</td>
+                           <td data-label="Acciones" class="actions">
+                               <div class="btn-group">
+                                   <a href="/{{ username }}/equipo/{{ equipo.id }}" class="btn btn-view btn-sm">
+                                       <i class="fas fa-eye"></i> <span>Ver</span>
+                                   </a>
+                                   <button type="button" class="btn btn-edit btn-sm" onclick="abrirModalEditar('{{ equipo.id }}', '{{ equipo.nombre }}', '{{ equipo.tipo }}')">
+                                       <i class="fas fa-edit"></i> <span>Editar</span>
+                                   </button>
+                                   <button type="button" class="btn btn-delete btn-sm" onclick="confirmarEliminar('{{ equipo.id }}', '{{ equipo.nombre }}')">
+                                       <i class="fas fa-trash"></i> <span>Eliminar</span>
+                                   </button>
+                               </div>
+                           </td>
+                       </tr>
+                       {% endif %}
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+       {% else %}
+       <div class="empty-state">
+           <i class="fas fa-users"></i>
+           <h3>No hay equipos</h3>
+           <p>Comienza creando tu primer equipo</p>
+           <a href="/{{ username }}/equipos/nuevo" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Nuevo Equipo
+           </a>
+       </div>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal fade" id="editarEquipoModal" tabindex="-1" role="dialog" aria-labelledby="editarEquipoModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="editarEquipoModalLabel">Editar Equipo</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+               </button>
+           </div>
+           <form id="formEditarEquipo" method="POST">
+               <div class="modal-body">
+                   <div class="form-group">
+                       <label for="nombre_equipo"><i class="fas fa-users"></i> Nombre del Equipo:</label>
+                       <input type="text" id="nombre_equipo" name="nombre" class="form-control" required>
+                   </div>
+                   <div class="form-group">
+                       <label for="tipo_equipo"><i class="fas fa-venus-mars"></i> Tipo:</label>
+                       <select id="tipo_equipo" name="tipo" class="form-control" required>
+                           <option value="masculino">Masculino</option>
+                           <option value="femenino">Femenino</option>
+                           <option value="mixto">Mixto</option>
+                       </select>
+                   </div>
+               </div>
+               <div class="modal-footer">
+                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                   <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+               </div>
+           </form>
+       </div>
+   </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+               </button>
+           </div>
+           <div class="modal-body">
+               <p>¿Estás seguro de que quieres eliminar el equipo <strong id="equipo-nombre"></strong>?</p>
+               <p class="text-danger">Esta acción eliminará también todos los jugadores y su participación en ligas.</p>
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+               <form id="form-eliminar" method="POST">
+                   <button type="submit" class="btn btn-danger">Eliminar</button>
+               </form>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+   function abrirModalEditar(equipoId, nombreEquipo, tipoEquipo) {
+       // Configurar el formulario
+       document.getElementById('formEditarEquipo').action = '/{{ username }}/equipo/' + equipoId + '/editar';
+       document.getElementById('nombre_equipo').value = nombreEquipo;
+       document.getElementById('tipo_equipo').value = tipoEquipo;
+       
+       // Abrir el modal
+       $('#editarEquipoModal').modal('show');
+   }
+   
+   function confirmarEliminar(id, nombre) {
+       document.getElementById('equipo-nombre').textContent = nombre;
+       document.getElementById('form-eliminar').action = '/{{ username }}/equipo/' + id + '/eliminar';
+       $('#eliminarModal').modal('show');
+   }
+</script>
+{% endblock %}

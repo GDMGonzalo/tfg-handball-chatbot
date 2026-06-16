@@ -1,0 +1,119 @@
+/* Estilos para las páginas de autenticación */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 450px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-header p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.auth-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.auth-form label i {
+  margin-right: 0.5rem;
+  color: #007bff;
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="email"],
+.auth-form input[type="password"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.auth-form input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.auth-form .remember-me,
+.auth-form .terms {
+  display: flex;
+  align-items: center;
+}
+
+.auth-form .remember-me input,
+.auth-form .terms input {
+  margin-right: 0.5rem;
+}
+
+.auth-actions {
+  margin-top: 2rem;
+}
+
+.auth-actions .btn {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.auth-actions .btn i {
+  margin-right: 0.5rem;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 1.5rem;
+  }
+
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
+}

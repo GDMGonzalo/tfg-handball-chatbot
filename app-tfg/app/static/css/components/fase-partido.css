@@ -1,0 +1,136 @@
+/* Estilos para el indicador de fase del partido */
+.fase-partido-container {
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.fase-actual-indicador {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.fase-actual-indicador i {
+  margin-right: 8px;
+  color: #6c757d;
+}
+
+/* Estilos específicos para cada fase */
+.fase-actual-indicador.pre-partido {
+  border-left-color: #6c757d;
+  background-color: #f8f9fa;
+}
+
+.fase-actual-indicador.parte1 {
+  border-left-color: #28a745;
+  background-color: #e8f5e9;
+}
+
+.fase-actual-indicador.descanso {
+  border-left-color: #fd7e14;
+  background-color: #fff3e0;
+}
+
+.fase-actual-indicador.parte2 {
+  border-left-color: #007bff;
+  background-color: #e3f2fd;
+}
+
+.fase-actual-indicador.fin-tiempo {
+  border-left-color: #6610f2;
+  background-color: #f3e5f5;
+}
+
+.fase-actual-indicador.prorroga1,
+.fase-actual-indicador.prorroga2 {
+  border-left-color: #dc3545;
+  background-color: #ffebee;
+}
+
+.fase-actual-indicador.descanso-prorroga {
+  border-left-color: #fd7e14;
+  background-color: #fff3e0;
+}
+
+.fase-actual-indicador.fin-prorroga,
+.fase-actual-indicador.fin-partido {
+  border-left-color: #343a40;
+  background-color: #e9ecef;
+}
+
+/* Estilos para los círculos de tiempos muertos */
+.tm-circles-container {
+  display: flex;
+  gap: 5px;
+  margin-left: 10px;
+}
+
+.tm-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.tm-circle.available {
+  background-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+.tm-circle.used {
+  background-color: #dc3545;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.tm-circle.disabled {
+  background-color: #e9ecef;
+  box-shadow: none;
+}
+
+.tm-circle.extra {
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+/* Animación de pulso para los círculos */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.tm-circle.pulse {
+  animation: pulse 0.5s ease-in-out;
+}
+
+/* Animación para valores actualizados */
+@keyframes highlight {
+  0% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: rgba(255, 193, 7, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.updated {
+  animation: highlight 1.5s ease-out;
+}

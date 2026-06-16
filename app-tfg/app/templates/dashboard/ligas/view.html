@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Liga - {{ liga.nombre }}{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>{{ liga.nombre }}</h1>
+        <p>{{ liga.descripcion }}</p>
+    </div>
+    <div>
+        <a href="/{{ username }}/liga/{{ liga.id }}/editar" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        <button type="button" class="btn btn-danger" onclick="confirmarEliminar('{{ liga.id }}', '{{ liga.nombre }}')">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- Información de la liga -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-trophy"></i> Categoría:</span>
+                <span class="info-value">{{ liga.categoria.nombre }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-calendar-alt"></i> Temporada:</span>
+                <span class="info-value"><a href="/{{ username }}/temporada/{{ temporada.id }}">{{ temporada.nombre }}</a></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-users"></i> Equipos:</span>
+                <span class="info-value">{{ equipos|length }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-futbol"></i> Partidos:</span>
+                <span class="info-value">{{ partidos|length }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipos de la liga -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-users"></i> Equipos</h3>
+        <a href="/{{ username }}/liga/{{ liga.id }}/agregar_equipo" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Agregar Equipo
+        </a>
+    </div>
+    <div class="section-body">
+        {% if equipos %}
+        <div class="equipos-grid">
+            {% for equipo in equipos %}
+            <div class="equipo-card">
+                <h4>{{ equipo.nombre }}</h4>
+                <p><i class="fas fa-tag"></i> Tipo: {{ equipo.tipo|capitalize }}</p>
+                <div class="equipo-actions">
+                    <a href="/{{ username }}/equipo/{{ equipo.id }}" class="btn btn-primary">Ver Equipo</a>
+                    <form method="POST" action="/{{ username }}/liga/{{ liga.id }}/eliminar_equipo/{{ equipo.id }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este equipo de la liga?');">
+                        <button type="submit" class="btn btn-danger">Eliminar de la Liga</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No hay equipos en esta liga</h3>
+            <p>Agrega equipos para comenzar a organizar partidos</p>
+            <a href="/{{ username }}/liga/{{ liga.id }}/agregar_equipo" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Agregar Equipo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Partidos de la liga -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-futbol"></i> Partidos</h3>
+        <a href="/{{ username }}/temporada/{{ temporada.id }}/partido/nuevo?liga_id={{ liga.id }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Partido
+        </a>
+    </div>
+    <div class="section-body">
+        {% if partidos %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Local</th>
+                        <th>Resultado</th>
+                        <th>Visitante</th>
+                        <th>Videos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for partido in partidos %}
+                    <tr class="partido-row" data-local-id="{{ partido.equipo_local.id }}" data-visitante-id="{{ partido.equipo_visitante.id }}">
+                        <td>{{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><a href="/{{ username }}/equipo/{{ partido.equipo_local.id }}">{{ partido.equipo_local.nombre }}</a></td>
+                        <td class="text-center"><span class="resultado">{{ partido.resultado }}</span></td>
+                        <td><a href="/{{ username }}/equipo/{{ partido.equipo_visitante.id }}">{{ partido.equipo_visitante.nombre }}</a></td>
+                        <td>{{ partido.videos|length }}</td>
+                        <td>
+                            <a href="/{{ username }}/partido/{{ partido.id }}" class="btn btn-sm btn-primary">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-futbol"></i>
+            <h3>No hay partidos programados</h3>
+            <p>Comienza creando tu primer partido</p>
+            <a href="/{{ username }}/temporada/{{ temporada.id }}/partido/nuevo?liga_id={{ liga.id }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Partido
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar la liga <strong id="liga-nombre"></strong>?</p>
+                <p class="text-danger">Esta acción eliminará también todos los partidos asociados a esta liga.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="form-eliminar" method="POST">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('liga-nombre').textContent = nombre;
+        document.getElementById('form-eliminar').action = '/{{ username }}/liga/' + id + '/eliminar';
+        $('#eliminarModal').modal('show');
+    }
+</script>
+{% endblock %}

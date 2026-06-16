@@ -1,0 +1,2027 @@
+{% extends "layout.html" %}
+
+{% block title %}Ver Video - {{ video.filename }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ver_video.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/player-cards.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/event-annotation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiro-submenu.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/fase-partido.css') }}">
+<script src="{{ url_for('static', filename='js/popup.js') }}"></script>
+<style>
+  /* Ocultar el footer en esta página específica */
+  .site-footer {
+    display: none !important;
+  }
+
+  /* Ajustar el contenido principal para ocupar todo el espacio disponible */
+  .site-main {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Asegurar que el contenedor principal ocupe toda la altura disponible */
+  body,
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .container-fluid {
+    height: 100vh;
+    /* Ajustar según el tamaño del header */
+    overflow: auto;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* Asegurar que el match-container ocupe todo el ancho disponible */
+  .match-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* BLOQUE FINAL */
+  @media (min-width: 1400px) {
+    .match-container {
+      display: grid !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .team-column {
+      flex: 1 !important;
+      min-width: 250px !important;
+      max-width: none !important;
+      padding: 12px !important;
+    }
+
+    .players-grid {
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important;
+      gap: 6px !important;
+    }
+
+    .player-card {
+      width: 70px !important;
+      height: 60px !important;
+      font-size: 0.8rem !important;
+    }
+  }
+
+  /* Estilos para el selector de color de equipo */
+  .team-color-selector {
+    display: inline-block;
+    position: relative;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .team-jersey-icon {
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  .team-jersey-icon:hover {
+    transform: scale(1.2);
+  }
+
+  .team-jersey-icon.local i {
+    color: #ffff00;
+    text-shadow: 0 0 2px #000;
+  }
+
+  .team-jersey-icon.visitante i {
+    color: #0000ff;
+    text-shadow: 0 0 2px #000;
+  }
+
+  .team-color-input {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  .team-color-input.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Estilos para los eventos según el equipo */
+  .evento-item.local {
+    border-left: 4px solid #ffff00;
+  }
+
+  .evento-item.visitante {
+    border-left: 4px solid #0000ff;
+  }
+
+  /* Estilos para los nombres de equipo en el marcador */
+  .team-name-local {
+    color: #ffff00;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+  }
+
+  .team-name-visitante {
+    color: #0000ff;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+  }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid video-page event-annotation">
+  <div class="row mb-3">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="text-center flex-grow-1">
+          <h2 class="mb-1">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</h2>
+          <p class="text-muted mb-0">
+            {% if partido.fecha_hora %}
+            {{ partido.fecha_hora.strftime('%d/%m/%Y') }}
+            {% else %}
+            Fecha no disponible
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" id="auto-analysis-button">
+            <i class="fas fa-magic"></i> Análisis automático
+          </button>
+          <a href="{{ url_for('video_routes.listar_videos', username=username) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="match-container">
+    <!-- Equipo Local -->
+    <div class="team-column local">
+      <div class="team-header">
+        <h3>
+          <a href="{{ url_for('equipo_routes.ver_equipo', username=username, equipo_id=partido.equipo_local.id) }}">
+            {{ partido.equipo_local.nombre }}
+          </a>
+          <div class="team-color-selector">
+            <span class="team-jersey-icon local" title="Cambiar color del equipo local">
+              <i class="fas fa-tshirt"></i>
+            </span>
+            <input type="color" class="team-color-input local" value="#ffff00">
+          </div>
+        </h3>
+      </div>
+
+      <!-- Jugadores en pista (Local) -->
+      <div class="players-section">
+        <div class="players-header">
+          <h5>En pista</h5>
+          <button class="team-btn" onclick="openPlayerSelectionModal('local')">
+            Seleccionar
+          </button>
+        </div>
+        <div class="players-grid" id="jugadores-pista-local">
+          <!-- Aquí se cargarán los jugadores en pista del equipo local -->
+          <div class="empty-state">
+            <p>No hay jugadores en pista</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banquillo (Local) -->
+      <div class="players-section">
+        <div class="players-header">
+          <h5>Banquillo</h5>
+        </div>
+        <div class="players-grid" id="jugadores-local">
+          <!-- Aquí se cargarán los jugadores del banquillo local -->
+          <div class="empty-state">
+            <p>No hay jugadores en banquillo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas en tiempo real (Local) -->
+      <div class="team-stats-panel">
+        <div class="stats-header">
+          <h5>Estadísticas</h5>
+          <div class="refresh-stats">
+            <i class="fas fa-sync-alt" title="Actualizar estadísticas"></i>
+          </div>
+        </div>
+        <div class="stats-content" id="stats-local">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-futbol"></i></div>
+            <div class="stat-label">Goles:</div>
+            <div class="stat-value" id="goles-local">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-stopwatch"></i></div>
+            <div class="stat-label">Tiempos muertos:</div>
+            <div class="stat-value" id="tiempos-muertos-local">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-hand-paper"></i></div>
+            <div class="stat-label">Faltas:</div>
+            <div class="stat-value" id="faltas-local">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-times"></i></div>
+            <div class="stat-label">Pérdidas:</div>
+            <div class="stat-value" id="perdidas-local">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-redo"></i></div>
+            <div class="stat-label">Recuperaciones:</div>
+            <div class="stat-value" id="recuperaciones-local">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Central y Eventos -->
+    <div class="video-column">
+      <!-- Reproductor de video -->
+      <div class="video-wrapper video-container-v10">
+        {% set liga_path = "liga_" + partido.liga.id|string if partido.liga else "sin_liga" %}
+        <video id="video-player" class="video-player" controls preload="metadata" data-video-id="{{ video.id }}"
+          data-username="{{ username }}">
+
+          <source
+            src="{{ url_for('video_routes.serve_video_files', username=username, temporada_id=partido.temporada.id, liga_path=liga_path, partido_id=partido.id, filename=video.filename) }}"
+            type="video/mp4">
+          Tu navegador no soporta reproducción de video.
+        </video>
+        <canvas id="videoCanvas" width="640" height="360" class="video-player tracking hidden"></canvas>
+        <!-- Mensaje de carga -->
+        <div id="loading-message" class="loading-message">
+          <i class="fas fa-spinner fa-spin"></i> Cargando video...
+        </div>
+
+        <!-- Controles avanzados superpuestos -->
+        <div class="minimal-controls">
+          <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+          <div class="controls-row">
+            <div class="controls-left">
+              <button id="play-pause" class="control-btn" title="Reproducir/Pausar (Espacio)">
+                <i class="fas fa-play"></i>
+              </button>
+              <button id="step-backward" class="control-btn" title="Retroceder un fotograma (,)">
+                <i class="fas fa-step-backward"></i>
+              </button>
+              <button id="step-forward" class="control-btn" title="Avanzar un fotograma (.)">
+                <i class="fas fa-step-forward"></i>
+              </button>
+              <button id="backward" class="control-btn" title="Retroceder segundos (←)">
+                <i class="fas fa-backward"></i>
+              </button>
+
+              <button id="forward" class="control-btn" title="Avanzar segundos (→)">
+                <i class="fas fa-forward"></i>
+              </button>
+            </div>
+            <div class="time-display">
+              <span id="current-time">0:00</span> / <span id="duration">0:00</span>
+            </div>
+            <div class="controls-right">
+              <select id="playback-speed" class="speed-select" title="Velocidad de reproducción">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+              </select>
+              <button id="fullscreen-button" class="control-btn" title="Pantalla completa (F)">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marcador principal -->
+        <div class="match-score">
+          <span class="team-name-local">{{ partido.equipo_local.nombre[:3].upper() }}</span>
+          <span class="score-local" id="score-local">0</span>
+          <span class="score-separator">-</span>
+          <span class="score-visitante" id="score-visitante">0</span>
+          <span class="team-name-visitante">{{ partido.equipo_visitante.nombre[:3].upper() }}</span>
+        </div>
+      </div>
+      <div class="card shadow-sm border-0 py-2 hidden tracking">
+        <div class="flex justify-center items-center gap-3">
+          <div class="btn-toolbar justify-content-center gap-2 mb-3" role="toolbar"
+            aria-label="Controles de reproducción">
+            <div class="btn-group me-2" role="group" aria-label="Reproducción">
+              <button id="playBtn" class="btn btn-success">
+                Play
+              </button>
+              <button id="pauseBtn" class="btn btn-danger">
+                Pausa
+              </button>
+              <button id="restartBtn" class="btn btn-outline-secondary">
+                ⏮ Reiniciar
+              </button>
+            </div>
+
+            <div class="btn-group me-2" role="group" aria-label="Fotogramas">
+              <button id="prevFrameBtn" class="btn btn-outline-secondary">
+                ◀ Frame -1
+              </button>
+              <button id="nextFrameBtn" class="btn btn-outline-secondary">
+                ▶ Frame +1
+              </button>
+            </div>
+
+            <div class="btn-group" role="group" aria-label="Segundos">
+              <button id="prevSecondBtn" class="btn btn-outline-secondary">⏪ -1s</button>
+              <button id="nextSecondBtn" class="btn btn-outline-secondary">⏩ +1s</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="Salir">
+              <button id="exitBtn" class="btn btn-danger" onclick="closeTracking()">Salir</button>
+            </div>
+          </div>
+          <div class="text-center mb-3">
+            <button id="assign-ids" class="btn btn-secondary btn-lg">
+              Asignar IDs
+            </button>
+          </div>
+          <div class="text-center">
+            <button id="save" class="btn btn-primary btn-lg">
+              Guardar cambios
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de eventos - Anotación de eventos -->
+      <div class="events-panel">
+        <div class="events-header d-flex justify-content-between align-items-center mb-3">
+          <h3 class="mb-0">Eventos</h3>
+          <a href="{{ url_for('evento_personalizado_routes.configurar_eventos_video', username=username, video_id=video.id) }}"
+            class="btn btn-sm btn-secondary" title="Configurar eventos para este video">
+            <i class="fas fa-cogs"></i> Configurar
+          </a>
+        </div>
+        <div class="event-instructions">Selecciona un jugador para comenzar a registrar eventos</div>
+        <div class="event-categories">
+          <!-- Aquí se cargarán las categorías de eventos -->
+        </div>
+        <div class="event-types" id="event-types-container">
+          <!-- Aquí se cargarán los tipos de eventos -->
+        </div>
+        <div class="events-list" id="events-list-container">
+          <!-- Aquí se cargarán los eventos registrados -->
+        </div>
+      </div>
+      <div id="analysis-panel" class="events-panel mb-3">
+        <div class="events-header">
+          <h3>Análisis automáticos</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Fecha</th>
+                <th scope="col">Progreso</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="analysis-list">
+              <!-- Aquí se cargarán las tareas de análisis automático -->
+              {% if tareas %}
+              {% for tarea, descarga in tareas %}
+              <tr data-analysis-id="{{ tarea.id }}" data-tarea-estado="{{ tarea.estado }}">
+                <td>{{ tarea.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>{{ tarea.progreso }}%</td>
+                <td>
+                  {% if tarea.estado == 1 %}
+                  <span class="badge bg-success">Análisis completado</span>
+                  {% elif tarea.estado == 0 %}
+                  <span class="badge bg-warning">En progreso</span>
+                  {% elif tarea.estado == 2 %}
+                  <span class="badge bg-danger">Cancelada</span>
+                  {% elif tarea.estado == 3 %}
+                  <span class="badge bg-secondary">Posprocesando</span>
+                  {% elif tarea.estado == 4 %}
+                  <span class="badge bg-danger">Error</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if tarea.estado == 0 or tarea.estado == 3 %}
+                  <button class="btn btn-danger btn-sm" onclick="deleteAnalysis('{{ tarea.id }}')">
+                    <i class="fas fa-times"></i> Cancelar
+                  </button>
+                  {% elif tarea.estado == 1 %}
+                  <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button"
+                      onclick="viewAnalysisResults('{{ tarea.id }}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    {% if descarga %}
+                    {% if descarga.estado == 1 %}
+                    <div class="d-flex justify-content-start">
+                      <button type="button" class="btn btn-secondary btn-sm rounded-0" onclick="downloadRender('{{ tarea.id }}')">
+                        <i class="fas fa-download"></i> Descargar
+                      </button>
+
+                      <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split rounded-0"
+                        data-toggle="dropdown" aria-expanded="false">
+                        <span class="hidden">Toggle Dropdown</span>
+                      </button>
+
+                      <ul class="dropdown-menu">
+                        <li><button class="dropdown-item text-danger"
+                            onclick="deleteRender('{{ descarga.id }}')">Eliminar</button></li>
+                      </ul>
+                    </div>
+                    {% else %}
+                    <button class="btn btn-info btn-sm" disabled onclick="() => {}">
+                      <i class="fas fa-download"></i> Procesando
+                    </button>
+                    <script>
+                      document.addEventListener('DOMContentLoaded', function () {
+                        intervalos_descargas.push({
+                          id: '{{ descarga.id }}',
+                          interval: setInterval(() => {
+                            updateRenderStatus('{{ descarga.id }}', '{{ tarea.id }}');
+                          }, 1000)
+                        });
+                      });
+                    </script>
+                    {% endif %}
+
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm" onclick="startRender('{{ tarea.id }}')">
+                      <i class="fas fa-download"></i> Procesar
+                    </button>
+                    {% endif %}
+                  </div>
+                  {% endif %}
+
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr id="no-analysis">
+                <td colspan="3" class="text-center">No hay análisis automáticos disponibles</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Equipo Visitante -->
+    <div class="team-column visitante">
+      <div class="team-header">
+        <h3>
+          <a href="{{ url_for('equipo_routes.ver_equipo', username=username, equipo_id=partido.equipo_visitante.id) }}">
+            {{ partido.equipo_visitante.nombre }}
+          </a>
+          <div class="team-color-selector">
+            <span class="team-jersey-icon visitante" title="Cambiar color del equipo visitante">
+              <i class="fas fa-tshirt"></i>
+            </span>
+            <input type="color" class="team-color-input visitante" value="#0000ff">
+          </div>
+        </h3>
+      </div>
+
+      <!-- Jugadores en pista (Visitante) -->
+      <div class="players-section">
+        <div class="players-header">
+          <h5>En pista</h5>
+          <button class="team-btn" onclick="openPlayerSelectionModal('visitante')">
+            Seleccionar
+          </button>
+        </div>
+        <div class="players-grid" id="jugadores-pista-visitante">
+          <!-- Aquí se cargarán los jugadores en pista del equipo visitante -->
+          <div class="empty-state">
+            <p>No hay jugadores en pista</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banquillo (Visitante) -->
+      <div class="players-section">
+        <div class="players-header">
+          <h5>Banquillo</h5>
+        </div>
+        <div class="players-grid" id="jugadores-visitante">
+          <!-- Aquí se cargarán los jugadores del banquillo visitante -->
+          <div class="empty-state">
+            <p>No hay jugadores en banquillo</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas en tiempo real (Visitante) -->
+      <div class="team-stats-panel">
+        <div class="stats-header">
+          <h5>Estadísticas</h5>
+          <div class="refresh-stats">
+            <i class="fas fa-sync-alt" title="Actualizar estadísticas"></i>
+          </div>
+        </div>
+        <div class="stats-content" id="stats-visitante">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-futbol"></i></div>
+            <div class="stat-label">Goles:</div>
+            <div class="stat-value" id="goles-visitante">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-stopwatch"></i></div>
+            <div class="stat-label">Tiempos muertos:</div>
+            <div class="stat-value" id="tiempos-muertos-visitante">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-hand-paper"></i></div>
+            <div class="stat-label">Faltas:</div>
+            <div class="stat-value" id="faltas-visitante">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-times"></i></div>
+            <div class="stat-label">Pérdidas:</div>
+            <div class="stat-value" id="perdidas-visitante">0</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-redo"></i></div>
+            <div class="stat-label">Recuperaciones:</div>
+            <div class="stat-value" id="recuperaciones-visitante">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="event-notification" class="event-notification"></div>
+</div>
+
+<!-- Modal para seleccionar jugadores en pista -->
+<div class="modal fade" id="player-selection-modal" tabindex="-1" role="dialog"
+  aria-labelledby="playerSelectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="playerSelectionModalLabel">Seleccionar jugadores en pista</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+          onclick="closePlayerSelectionModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="equipo-pista-id">
+
+        <div class="alert alert-info">
+          <strong>Nota:</strong> Selecciona hasta 7 jugadores que están en pista en este momento del video.
+        </div>
+
+        <div id="player-count-warning" class="player-count-warning">
+          ¡Has seleccionado más de 7 jugadores!
+        </div>
+
+        <div id="player-count-info" class="player-count-info">
+          Jugadores seleccionados: 0/7
+        </div>
+
+        <div id="jugadores-pista-list" class="jugadores-list">
+          <!-- Aquí se cargarán los jugadores disponibles -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closePlayerSelectionModal()">Cancelar</button>
+        <button type="button" id="save-players-pista" class="btn btn-primary">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Metadatos para JavaScript -->
+<meta name="username" content="{{ username }}">
+<meta name="video-id" content="{{ video.id }}">
+<meta name="partido-id" content="{{ partido.id }}">
+<meta name="equipo-local-id" content="{{ partido.equipo_local.id }}">
+<meta name="equipo-local-nombre" content="{{ partido.equipo_local.nombre }}">
+<meta name="equipo-visitante-id" content="{{ partido.equipo_visitante.id }}">
+<meta name="equipo-visitante-nombre" content="{{ partido.equipo_visitante.nombre }}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/video_controls.js') }}"></script>
+<script src="{{ url_for('static', filename='js/event_annotation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/estadisticas_tiempo_real.js') }}"></script>
+<script src="{{ url_for('static', filename='js/control_fases_partido.js') }}"></script>
+
+<!-- Script para asegurar que las tarjetas de jugadores tengan el atributo data-player-id -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Esta función se ejecutará después de que el DOM esté completamente cargado
+    // y después de que cualquier script que cargue las tarjetas de jugadores haya terminado
+    setTimeout(function () {
+      // Seleccionar todas las tarjetas de jugadores
+      const playerCards = document.querySelectorAll('.player-card');
+
+      // Asegurarse de que cada tarjeta tenga el atributo data-player-id
+      playerCards.forEach(function (card) {
+        if (!card.hasAttribute('data-player-id')) {
+          // Si no tiene el atributo, intentar obtenerlo de data-jugador-id o generar uno nuevo
+          const playerId = card.getAttribute('data-jugador-id') || 'player-' + Math.random().toString(36).substr(2, 9);
+          card.setAttribute('data-player-id', playerId);
+        }
+
+        // Asegurarse de que la tarjeta sea clickable
+        card.style.cursor = 'pointer';
+
+
+      });
+
+      console.log('Total de tarjetas de jugadores configuradas:', playerCards.length);
+    }, 1000); // Esperar 1 segundo para asegurarse de que todo esté cargado
+  });
+
+  // Ocultar el footer después de que la página se cargue completamente
+  document.addEventListener('DOMContentLoaded', function () {
+    // Ocultar el footer
+    const footer = document.querySelector('.site-footer');
+    if (footer) {
+      footer.style.display = 'none';
+    }
+  });
+</script>
+
+<script>
+  // Función para manejar los selectores de color de equipo
+  document.addEventListener('DOMContentLoaded', function () {
+    // Elementos DOM
+    const jerseyIconLocal = document.querySelector('.team-jersey-icon.local');
+    const jerseyIconVisitante = document.querySelector('.team-jersey-icon.visitante');
+    const colorInputLocal = document.querySelector('.team-color-input.local');
+    const colorInputVisitante = document.querySelector('.team-color-input.visitante');
+
+    // Obtener IDs de equipos para localStorage
+    const equipoLocalId = document.querySelector('meta[name="equipo-local-id"]').content;
+    const equipoVisitanteId = document.querySelector('meta[name="equipo-visitante-id"]').content;
+
+    // Cargar colores guardados o usar valores por defecto
+    const colorLocalGuardado = localStorage.getItem(`equipo_color_${equipoLocalId}`) || '#ffff00';
+    const colorVisitanteGuardado = localStorage.getItem(`equipo_color_${equipoVisitanteId}`) || '#0000ff';
+
+    // Aplicar colores iniciales
+    aplicarColorEquipo('local', colorLocalGuardado);
+    aplicarColorEquipo('visitante', colorVisitanteGuardado);
+
+    // Establecer valores iniciales en los inputs
+    colorInputLocal.value = colorLocalGuardado;
+    colorInputVisitante.value = colorVisitanteGuardado;
+
+    // Evento de clic en icono de camiseta local
+    jerseyIconLocal.addEventListener('click', function () {
+      colorInputLocal.classList.toggle('active');
+      colorInputVisitante.classList.remove('active');
+    });
+
+    // Evento de clic en icono de camiseta visitante
+    jerseyIconVisitante.addEventListener('click', function () {
+      colorInputVisitante.classList.toggle('active');
+      colorInputLocal.classList.remove('active');
+    });
+
+    // Evento de cambio de color para equipo local
+    colorInputLocal.addEventListener('input', function () {
+      const color = this.value;
+      aplicarColorEquipo('local', color);
+      localStorage.setItem(`equipo_color_${equipoLocalId}`, color);
+    });
+
+    // Evento de cambio de color para equipo visitante
+    colorInputVisitante.addEventListener('input', function () {
+      const color = this.value;
+      aplicarColorEquipo('visitante', color);
+      localStorage.setItem(`equipo_color_${equipoVisitanteId}`, color);
+    });
+
+    // Cerrar selectores de color al hacer clic fuera
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('.team-color-selector')) {
+        colorInputLocal.classList.remove('active');
+        colorInputVisitante.classList.remove('active');
+      }
+    });
+
+    // Función para aplicar el color seleccionado a todos los elementos relacionados
+    function aplicarColorEquipo(tipo, color) {
+      // Cambiar color del icono de camiseta
+      document.querySelector(`.team-jersey-icon.${tipo} i`).style.color = color;
+
+      // Cambiar color del nombre del equipo en el marcador
+      document.querySelector(`.team-name-${tipo}`).style.color = color;
+
+      // Cambiar color de los eventos asociados a este equipo
+      const eventosEquipo = document.querySelectorAll(`.evento-item.${tipo}`);
+      eventosEquipo.forEach(evento => {
+        evento.style.borderLeftColor = color;
+      });
+
+      // Actualizar el valor del input de color
+      document.querySelector(`.team-color-input.${tipo}`).value = color;
+    }
+
+
+
+    // Función para actualizar los colores de los eventos cuando se añaden nuevos
+    function actualizarColoresEventosNuevos() {
+      const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            const colorLocal = colorInputLocal.value;
+            const colorVisitante = colorInputVisitante.value;
+
+            // Actualizar eventos locales nuevos
+            const eventosLocalNuevos = document.querySelectorAll('.evento-item.local:not([style*="border-left-color"])');
+            eventosLocalNuevos.forEach(evento => {
+              evento.style.borderLeftColor = colorLocal;
+            });
+
+            // Actualizar eventos visitantes nuevos
+            const eventosVisitanteNuevos = document.querySelectorAll('.evento-item.visitante:not([style*="border-left-color"])');
+            eventosVisitanteNuevos.forEach(evento => {
+              evento.style.borderLeftColor = colorVisitante;
+            });
+          }
+        });
+      });
+
+      // Observar cambios en el contenedor de eventos
+      const eventsListContainer = document.getElementById('events-list-container');
+      if (eventsListContainer) {
+        observer.observe(eventsListContainer, { childList: true, subtree: true });
+      }
+    }
+
+    // Iniciar observador para eventos nuevos
+    actualizarColoresEventosNuevos();
+  });
+</script>
+
+<script>
+  const video = document.getElementById("video-player");
+  const canvas = document.getElementById("videoCanvas");
+  const ctx = canvas.getContext("2d");
+  const playBtn = document.getElementById("playBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const exitBtn = document.getElementById("exitBtn");
+  var fps = 30;
+  var motTxt = {};
+  var jugadores_tracking = {};
+  var trackingActual = null;
+  var popupActivo = null;
+  let currentBoxes = [];
+
+  const button = document.querySelector("#auto-analysis-button");
+
+  // Reiniciar al primer frame
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    video.pause();
+    video.currentTime = 0;
+  });
+
+  // Avanzar un frame
+  document.getElementById("nextFrameBtn").addEventListener("click", () => {
+    video.pause();
+    video.currentTime += 1 / fps;
+  });
+
+  // Retroceder un frame
+  document.getElementById("prevFrameBtn").addEventListener("click", () => {
+    video.pause();
+    video.currentTime = Math.max(0, video.currentTime - 1 / fps);
+  });
+
+  // Avanzar 1 segundo (30 frames)
+  document.getElementById("nextSecondBtn").addEventListener("click", () => {
+    video.pause();
+    video.currentTime = Math.min(video.duration, video.currentTime + 1);
+  });
+
+  // Retroceder 1 segundo (30 frames)
+  document.getElementById("prevSecondBtn").addEventListener("click", () => {
+    video.pause();
+    video.currentTime = Math.max(0, video.currentTime - 1);
+  });
+
+  document.getElementById("save").addEventListener("click", () => {
+    confirmUpdateMot(trackingActual)
+  });
+
+  document.getElementById("assign-ids").addEventListener("click", () => {
+    assignIdsToBoxes(trackingActual);
+  });
+
+  playBtn.addEventListener("click", () => video.play());
+  pauseBtn.addEventListener("click", () => video.pause());
+
+button.addEventListener("click", function () {
+  const html = `
+    <div class="popup-content w-100" style="max-height:80vh; overflow-y:auto;">
+      <h2>Iniciar Análisis Automático</h2>
+      <p>¿Quieres iniciar el análisis de este vídeo?</p>
+      <p>Este proceso puede tardar un tiempo dependiendo de la duración del vídeo.</p>
+
+      <fieldset style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:12px;">
+        <legend style="padding:0 6px;font-weight:600;">Hiperparámetros del modelo</legend>
+        <label for="modelo">Modelo</label>
+        <select id="modelo" class="mb-2 rounded">
+          <option value="deepeiou">Deep-EIoU</option>
+        </select>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:center;">
+          <label for="hp-TRACK_HIGH_THRESH">TRACK_HIGH_THRESH</label>
+          <input id="hp-TRACK_HIGH_THRESH" type="number" step="0.01" min="0" max="1" value="0.6">
+
+          <label for="hp-TRACK_LOW_THRESH">TRACK_LOW_THRESH</label>
+          <input id="hp-TRACK_LOW_THRESH" type="number" step="0.01" min="0" max="1" value="0.1">
+
+          <label for="hp-NEW_TRACK_THRESH">NEW_TRACK_THRESH</label>
+          <input id="hp-NEW_TRACK_THRESH" type="number" step="0.01" min="0" max="1" value="0.7">
+
+          <label for="hp-TRACK_BUFFER">TRACK_BUFFER</label>
+          <input id="hp-TRACK_BUFFER" type="number" step="1" min="0" value="60">
+
+          <label for="hp-MATCH_THRESH">MATCH_THRESH</label>
+          <input id="hp-MATCH_THRESH" type="number" step="0.01" min="0" max="1" value="0.8">
+
+          <label for="hp-ASPECT_RATIO_THRESH">ASPECT_RATIO_THRESH</label>
+          <input id="hp-ASPECT_RATIO_THRESH" type="number" step="0.01" min="0" value="1.6">
+
+          <label for="hp-MIN_BOX_AREA">MIN_BOX_AREA</label>
+          <input id="hp-MIN_BOX_AREA" type="number" step="1" min="0" value="10">
+
+          <label for="hp-NMS_THRES">NMS_THRES</label>
+          <input id="hp-NMS_THRES" type="number" step="0.01" min="0" max="1" value="0.7">
+
+          <label for="hp-PROXIMITY_THRESH">PROXIMITY_THRESH</label>
+          <input id="hp-PROXIMITY_THRESH" type="number" step="0.01" min="0" max="1" value="0.5">
+
+          <label for="hp-APPEARANCE_THRESH">APPEARANCE_THRESH</label>
+          <input id="hp-APPEARANCE_THRESH" type="number" step="0.01" min="0" max="1" value="0.25">
+        </div>
+      </fieldset>
+
+      <label style="display:flex;gap:8px;align-items:center;margin:8px 0;">
+        <input type="checkbox" id="postprocess-checkbox">
+        Realizar postprocesado
+      </label>
+
+      <fieldset id="pp-fieldset" style="margin:12px 0;padding:12px;border:1px solid #e5e7eb;border-radius:12px;opacity:.6;">
+        <legend style="padding:0 6px;font-weight:600;">Parámetros de postprocesado</legend>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:center;">
+          <label for="pp-USE_SPLIT">USE_SPLIT</label>
+          <input id="pp-USE_SPLIT" type="checkbox">
+
+          <label for="pp-MIN_LEN">MIN_LEN</label>
+          <input id="pp-MIN_LEN" type="number" step="1" min="0" value="100" disabled>
+
+          <label for="pp-EPS">EPS</label>
+          <input id="pp-EPS" type="number" step="0.01" min="0" value="0.7" disabled>
+
+          <label for="pp-MIN_SAMPLES">MIN_SAMPLES</label>
+          <input id="pp-MIN_SAMPLES" type="number" step="1" min="1" value="4" disabled>
+
+          <label for="pp-MAX_K">MAX_K</label>
+          <input id="pp-MAX_K" type="number" step="1" min="1" value="3" disabled>
+
+          <label for="pp-USE_CONNECT">USE_CONNECT</label>
+          <input id="pp-USE_CONNECT" type="checkbox" checked disabled>
+
+          <label for="pp-SPATIAL_FACTOR">SPATIAL_FACTOR</label>
+          <input id="pp-SPATIAL_FACTOR" type="number" step="0.01" min="0" value="1.0" disabled>
+
+          <label for="pp-MERGE_DIST_THRESH">MERGE_DIST_THRESH</label>
+          <input id="pp-MERGE_DIST_THRESH" type="number" step="0.01" min="0" value="0.4" disabled>
+        </div>
+      </fieldset>
+
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="confirm-analysis" class="btn btn-primary">Confirmar</button>
+        <button id="cancel-analysis" class="btn btn-secondary" onclick="popupActivo.closePopup()">Cancelar</button>
+      </div>
+    </div>
+  `;
+
+  popupActivo = new Popup(html, {
+    width: 'min(95%, 700px)',
+    height: 'auto',
+    backgroundColor: 'white',
+    closeButton: true,
+    overlay: true,
+    element: document.body
+  });
+
+  // Helpers
+  const num = (id, def, {min=-Infinity, max=Infinity, integer=false}={}) => {
+    const el = document.getElementById(id);
+    let v = integer ? parseInt(el.value, 10) : parseFloat(el.value);
+    if (Number.isNaN(v)) v = def;
+    v = Math.max(min, Math.min(max, v));
+    el.value = integer ? String(v|0) : String(v);
+    return v;
+  };
+  const bool = (id) => document.getElementById(id).checked;
+
+  const ppToggle = document.getElementById("postprocess-checkbox");
+  const ppFieldset = document.getElementById("pp-fieldset");
+  const setPPEnabled = (enabled) => {
+    ppFieldset.style.opacity = enabled ? "1" : ".6";
+    ppFieldset.querySelectorAll("input").forEach((el) => {
+      el.disabled = !enabled;
+    });
+  };
+  setPPEnabled(false);
+  ppToggle.addEventListener("change", () => setPPEnabled(ppToggle.checked));
+
+  document.getElementById("confirm-analysis").addEventListener("click", function () {
+    const postprocess = bool("postprocess-checkbox");
+
+    const payload = {
+      modelo: document.getElementById("modelo").value,
+      TRACK_HIGH_THRESH:    num("hp-TRACK_HIGH_THRESH", 0.6, {min:0, max:1}),
+      TRACK_LOW_THRESH:     num("hp-TRACK_LOW_THRESH", 0.1, {min:0, max:1}),
+      NEW_TRACK_THRESH:     num("hp-NEW_TRACK_THRESH", 0.7, {min:0, max:1}),
+      TRACK_BUFFER:         num("hp-TRACK_BUFFER", 60, {min:0, integer:true}),
+      MATCH_THRESH:         num("hp-MATCH_THRESH", 0.8, {min:0, max:1}),
+      ASPECT_RATIO_THRESH:  num("hp-ASPECT_RATIO_THRESH", 1.6, {min:0}),
+      MIN_BOX_AREA:         num("hp-MIN_BOX_AREA", 10, {min:0, integer:true}),
+      NMS_THRES:            num("hp-NMS_THRES", 0.7, {min:0, max:1}),
+      PROXIMITY_THRESH:     num("hp-PROXIMITY_THRESH", 0.5, {min:0, max:1}),
+      APPEARANCE_THRESH:    num("hp-APPEARANCE_THRESH", 0.25, {min:0, max:1}),
+      postprocess
+    };
+
+    if (postprocess) {
+      payload.postprocess_params = {
+        USE_SPLIT:          bool("pp-USE_SPLIT"),
+        MIN_LEN:            num("pp-MIN_LEN", 100, {min:0, integer:true}),
+        EPS:                num("pp-EPS", 0.7, {min:0}),
+        MIN_SAMPLES:        num("pp-MIN_SAMPLES", 4, {min:1, integer:true}),
+        MAX_K:              num("pp-MAX_K", 3, {min:1, integer:true}),
+        USE_CONNECT:        bool("pp-USE_CONNECT"),
+        SPATIAL_FACTOR:     num("pp-SPATIAL_FACTOR", 1.0, {min:0}),
+        MERGE_DIST_THRESH:  num("pp-MERGE_DIST_THRESH", 0.4, {min:0})
+      };
+    }
+
+    startAnalysis(payload);
+    popupActivo.closePopup();
+  });
+});
+
+
+
+
+  function startRender(tareaId) {
+    html = `
+    <div class="popup-content">
+      <h2>Iniciar procesamiento</h2>
+      <p>¿Quieres iniciar el procesamiento para descargar este vídeo?</p>
+      <p>Este proceso puede tardar un tiempo dependiendo de la duración del vídeo.</p>
+      <form id="render-form" onsubmit="return false;">
+        <input type="checkbox" id="confirm-checkbox">
+        <label for="confirm-checkbox">Ocultar caras</label><br><br>
+        <button id="confirm-analysis" class="btn btn-primary" 
+          onclick="confirmStartRender(${tareaId}, document.getElementById('confirm-checkbox').checked)">
+          Confirmar
+        </button>
+        <button id="cancel-analysis" class="btn btn-secondary" onclick="popupActivo.closePopup()">Cancelar</button>
+      </form>
+    </div>
+  `;
+    popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+  }
+  function confirmStartRender(tareaId, blurFaces) {
+    $.ajax({
+      url: `/video/analisis-automatico/${tareaId}/renderizar`,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        blur: blurFaces
+      }),
+      success: function (response) {
+        popupActivo.closePopup();
+        intervalos_descargas.push({
+          id: response.id,
+          interval: setInterval(() => {
+            updateRenderStatus(response.id, tareaId);
+          }, 1000)
+        });
+      },
+      error: function (error) {
+        console.error('Error al iniciar procesamiento:', error);
+      }
+    });
+  }
+  function addAnalysis(analysis) {
+    const analysisList = document.getElementById("analysis-list");
+    const row = document.createElement("tr");
+    row.setAttribute("data-analysis-id", analysis.id);
+    row.innerHTML = `
+      <td>${analysis.fecha}</td>
+      <td>${analysis.progreso}%</td>
+      <td>
+          <span class="badge bg-warning">En progreso</span>
+      </td>
+      <td>
+          <button class="btn btn-danger btn-sm" onclick="deleteAnalysis('${analysis.id}')">
+              <i class="fas fa-times"></i> Cancelar
+          </button>
+      </td>
+    `;
+    analysisList.appendChild(row);
+  }
+
+  function viewAnalysisResults(analysisId) {
+    try {
+      fetchMotTxt(analysisId);
+      trackingActual = analysisId;
+      document.querySelectorAll('.tracking').forEach(el => el.classList.remove('hidden'));
+      document.querySelector('#video-player').classList.add('hidden');
+      document.querySelector('.minimal-controls').classList.add('hidden');
+      document.querySelectorAll('.tracking-button').forEach(btn => btn.disabled = true);
+    } catch (error) {
+      closeTracking();
+      console.error('Error al obtener datos MOT:', error);
+    }
+  }
+
+  function closeTracking() {
+    trackingActual = null;
+    document.querySelectorAll('.tracking').forEach(el => el.classList.add('hidden'));
+    document.querySelector('video').classList.remove('hidden');
+    document.querySelector('.minimal-controls').classList.remove('hidden');
+    document.querySelectorAll('.tracking-button').forEach(btn => btn.disabled = false);
+  }
+
+  function fetchMotTxt(analysisId) {
+    $.ajax({
+      url: `/{{username}}/analisis-automatico/${analysisId}/mot`,
+      method: 'GET',
+      success: function (data) {
+        motTxt = data.motTxt;
+        fps = data.fps;
+        jugadores_tracking = data.jugadores_tracking;
+        console.log('Jugadores en pista:', jugadores_tracking);
+      },
+      error: function (error) {
+        console.error('Error al obtener datos MOT:', error);
+      }
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const currentFrame = Math.floor(video.currentTime * fps);
+    const boxes = motTxt[currentFrame] || [];
+
+    const scaleX = canvas.width / video.videoWidth;
+    const scaleY = canvas.height / video.videoHeight;
+
+    currentBoxes = []; // reset
+
+    boxes.forEach((lineStr) => {
+      const [frame, id, x, y, w, h] = lineStr.split(",").map(Number);
+
+      // Escalar coordenadas
+      const sx = x * scaleX;
+      const sy = y * scaleY;
+      const sw = w * scaleX;
+      const sh = h * scaleY;
+
+      ctx.strokeStyle = "lime";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(sx, sy, sw, sh);
+
+      ctx.fillStyle = "lime";
+      ctx.font = "16px Arial";
+      if(jugadores_tracking[id]) {
+        ctx.fillText(jugadores_tracking[id], sx, sy - 5);
+      } else {
+        ctx.fillText(`ID: ${id}`, sx, sy - 5);
+      }
+      currentBoxes.push({ frame, id, x: sx, y: sy, w: sw, h: sh });
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  function deleteAnalysis(analysisId) {
+    const html = `
+      <div class="popup-content">
+        <h2>Eliminar Análisis</h2>
+        <p>¿Estás seguro de que quieres eliminar este análisis?</p>
+        <button id="confirm-delete" class="btn btn-danger" onclick="confirmDeleteAnalysis(${analysisId})">Eliminar</button>
+        <button id="cancel-delete" class="btn btn-secondary" onclick="popupActivo.closePopup()">Cancelar</button>
+      </div>
+    `;
+    popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+  }
+
+  function confirmDeleteAnalysis(analysisId) {
+    $("#confirm-delete").prop("disabled", true);
+    $("#cancel-delete").prop("disabled", true);
+    $.ajax({
+      url: `/video/analisis-automatico/${analysisId}`,
+      type: 'DELETE',
+      success: function (response) {
+        if (response.success) {
+          popupActivo.closePopup();
+          const row = document.querySelector(`#analysis-list tr[data-analysis-id="${analysisId}"]`);
+          if (row) {
+            $(`#analysis-list tr[data-analysis-id="${analysisId}"] td:last-child`).html('');
+            $(`#analysis-list tr[data-analysis-id="${analysisId}"] td:nth-child(3)`).html('<span class="badge bg-danger">Cancelado</span>');
+
+          }
+          const intervalo = intervalos_tareas.find(i => i.id === analysisId);
+          if (intervalo) {
+            clearInterval(intervalo.interval);
+            intervalos_tareas = intervalos_tareas.filter(i => i.id !== analysisId);
+          }
+
+        } else {
+          alert("Error al eliminar el análisis: " + response.error);
+        }
+      },
+      error: function (err) {
+        console.log(err)
+        alert("Error al comunicarse con el servidor: " + err);
+      }
+    });
+  }
+  intervalos_tareas = [];
+  intervalos_descargas = [];
+  function startAnalysis(options) {
+  closeTracking();
+  $("#confirm-analysis").prop("disabled", true);
+  $("#cancel-analysis").prop("disabled", true);
+
+  $.ajax({
+    url: "/video/{{ video.id }}/analisis-automatico",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(options),
+    success: function (response) {
+      if (response.success) {
+        popupActivo.closePopup();
+        popupActivo = new Popup(`
+          <div class="popup-content">
+            <h2>Análisis Automático Iniciado</h2>
+            <p>El análisis automático del vídeo se ha iniciado. Esto puede tardar un tiempo.</p>
+          </div>
+        `, {
+          width: 'min(95%, 700px)',
+          height: 'auto',
+          backgroundColor: 'white',
+          closeButton: true,
+          overlay: true,
+          element: document.body
+        });
+        setTimeout(() => {
+          popupActivo.closePopup();
+        }, 3000);
+        if (document.getElementById("no-analysis")) {
+          document.getElementById("no-analysis").remove();
+        }
+        addAnalysis(response);
+        intervalos_tareas.push({
+          id: response.id,
+          interval: setInterval(() => {
+            updateTaskStatus(response.id);
+          }, 1000)
+        });
+
+      } else {
+        popupActivo.closePopup();
+        popupActivo = new Popup(`
+          <div class="popup-content">
+            <h2>Error al iniciar el análisis automático</h2>
+            <p>${response.error}</p>
+          </div>
+        `, {
+          width: 'min(95%, 700px)',
+          height: 'auto',
+          backgroundColor: 'white',
+          closeButton: true,
+          overlay: true,
+          element: document.body
+        });
+      }
+    },
+    error: function (err) {
+      console.log(err);
+      popupActivo.closePopup();
+      popupActivo = new Popup(`
+        <div class="popup-content">
+          <h2>Error al iniciar análisis</h2>
+          <p>${err.responseJSON ? err.responseJSON.error : "Error inesperado"}</p>
+        </div>
+      `, {
+        width: 'min(95%, 700px)',
+        height: 'auto',
+        backgroundColor: 'white',
+        closeButton: true,
+        overlay: true,
+        element: document.body
+      });
+    }
+  });
+}
+
+
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+
+    const x = (clientX - rect.left) * (canvas.width / rect.width);
+    const y = (clientY - rect.top) * (canvas.height / rect.height);
+
+    return { x, y };
+  }
+
+
+
+  canvas.addEventListener("click", (e) => {
+    const { x: mouseX, y: mouseY } = getCanvasCoords(e);
+    console.log(`Mouse position: (${mouseX}, ${mouseY})`);
+
+    for (let box of currentBoxes) {
+      if (
+        mouseX >= box.x &&
+        mouseX <= box.x + box.w &&
+        mouseY >= box.y &&
+        mouseY <= box.y + box.h
+      ) {
+        console.log("Box clicked:", box);
+        console.log(motTxt[box.frame]);
+        const realBox = motTxt[box.frame].find(b => parseInt(b.split(",")[1]) === parseInt(box.id));
+        editBox(realBox);
+        video.pause();
+        return;
+      }
+    }
+    console.log("No se hizo clic en ninguna caja.");
+  });
+  canvas.addEventListener("touchstart", (e) => {
+    const { x: mouseX, y: mouseY } = getCanvasCoords(e);
+    console.log(`Touch position: (${mouseX}, ${mouseY})`);
+
+    for (let box of currentBoxes) {
+      if (
+        mouseX >= box.x &&
+        mouseX <= box.x + box.w &&
+        mouseY >= box.y &&
+        mouseY <= box.y + box.h
+      ) {
+        const realBox = motTxt[box.frame].find(b => b.id === box.id);
+        console.log("Real box found:", realBox);
+        editBox(realBox);
+        video.pause();
+        return;
+      }
+    }
+  });
+
+
+  function editBox(box) {
+    boxJson = box.split(',')
+    boxObj = {
+      frame: boxJson[0],
+      id: boxJson[1],
+      x: boxJson[2],
+      y: boxJson[3],
+      w: boxJson[4],
+      h: boxJson[5]
+    }
+    const html = `
+      <div class="popup-content w-100 p-4 bg-white shadow-lg rounded">
+        <h2 class="text-center mb-4">Editar track</h2>
+        <p class="text-muted">Frame: ${boxObj.frame}</p>
+        <div class="mb-3">
+          <label for="newIdInput" class="form-label">ID:</label>
+          <input type="number" id="newIdInput" value="${boxObj.id}" class="form-control" />
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <div class="flex-fill me-2">
+            <label for="xInput" class="form-label">X:</label>
+            <input type="number" id="xInput" value="${boxObj.x}" class="form-control" />
+          </div>
+          <div class="flex-fill ms-2">
+            <label for="yInput" class="form-label">Y:</label>
+            <input type="number" id="yInput" value="${boxObj.y}" class="form-control" />
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <div class="flex-fill me-2">
+            <label for="wInput" class="form-label">Width:</label>
+            <input type="number" id="wInput" value="${boxObj.w}" class="form-control" />
+          </div>
+          <div class="flex-fill ms-2">
+            <label for="hInput" class="form-label">Height:</label>
+            <input type="number" id="hInput" value="${boxObj.h}" class="form-control" />
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+          <button id="confirmEdit" class="btn btn-primary w-48">Confirmar</button>
+          <button id="deleteBox" class="btn btn-danger w-48">Eliminar</button>
+          <button id="cancelEdit" class="btn btn-secondary w-48">Cancelar</button>
+        </div>
+      </div>
+    `;
+
+    const popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+
+    setTimeout(() => {
+      document.getElementById("confirmEdit").addEventListener("click", () => {
+        const newId = document.getElementById("newIdInput").value;
+        const newX = document.getElementById("xInput").value;
+        const newY = document.getElementById("yInput").value;
+        const newW = document.getElementById("wInput").value;
+        const newH = document.getElementById("hInput").value;
+        const newBox = {
+          id: boxObj.id,
+          x: newX,
+          y: newY,
+          w: newW,
+          h: newH,
+          frame: boxObj.frame,
+          newId: newId
+        };
+
+        updateBox(boxObj, newBox);
+
+        popupActivo.closePopup();
+      });
+      document.getElementById("deleteBox").addEventListener("click", () => {
+        deleteBox(boxObj);
+        popupActivo.closePopup();
+      });
+
+      document.getElementById("cancelEdit").addEventListener("click", () => {
+        popupActivo.closePopup();
+      });
+    }, 50);
+  }
+
+  function deleteBox(box) {
+    for (const frame of Object.keys(motTxt)) {
+      console.log(`Checking frame ${frame} for box ${box.frame}`);
+      if (parseInt(frame) < parseInt(box.frame)) continue;
+      const index = motTxt[frame].findIndex(b => parseInt(b.split(',')[1]) === parseInt(box.id));
+      if (index !== -1) {
+        motTxt[frame].splice(index, 1);
+        console.log(`Box deleted: ${box.id} from frame ${frame}`);
+      }
+    }
+  }
+
+  function updateBox(oldBox, newBox) {
+    const intFrame = parseInt(oldBox.frame);
+    const index = motTxt[intFrame].findIndex(box => parseInt(box.split(',')[1]) === parseInt(oldBox.id));
+    if (index !== -1) {
+      motTxt[intFrame][index] = `${intFrame},${newBox.newId},${newBox.x},${newBox.y},${newBox.w},${newBox.h},-1,-1,-1`;
+      if (oldBox.id !== newBox.newId) {
+        for (const frame of Object.keys(motTxt)) {
+          if (parseInt(frame) < parseInt(intFrame)) continue;
+          const index = motTxt[frame].findIndex(b => parseInt(b.split(',')[1]) === parseInt(oldBox.id));
+          if (index !== -1) {
+            const actualData = motTxt[frame][index].split(',');
+            motTxt[frame][index] = `${frame},${newBox.newId},${actualData[2]},${actualData[3]},${actualData[4]},${actualData[5]},-1,-1,-1`;
+            console.log(`Box ID updated: ${oldBox.id} to ${newBox.newId} in frame ${frame}`)
+          }
+        }
+      }
+    }
+    draw();
+  }
+  function confirmUpdateMot(analisisId) {
+    const html = `
+      <div class="popup-content">
+        <h2>Guardar cambios</h2>
+        <p>¿Estás seguro de que quieres guardar los cambios en este análisis?</p>
+        <p>No podrás obtener de nuevo las predicciones anteriores.</p>
+        <button id="confirm-save" class="btn btn-success" onclick="updateMOTBox(${analisisId})">Guardar</button>
+        <button id="cancel-save" class="btn btn-secondary" onclick="popupActivo.closePopup()">Cancelar</button>
+      </div>
+    `;
+    popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+  }
+
+  function motTxtToArray(motTxt) {
+    let lines = [];
+
+    Object.keys(motTxt)
+      .sort((a, b) => parseInt(a) - parseInt(b))
+      .forEach(frame => {
+        motTxt[frame].forEach(line => {
+          lines.push(line);
+        });
+      });
+
+    return lines;
+  }
+
+  function updateMOTBox(analisisId) {
+    const motArr = motTxtToArray(motTxt);
+    fetch(`/video/analisis-automatico/${analisisId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8"
+      },
+      body: motArr.join('\n')
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        if (response.success) {
+          popupActivo.closePopup();
+          window.location.reload();
+        } else {
+          alert("Error al actualizar el análisis: " + response.error);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Error al comunicarse con el servidor: " + err);
+      });
+  }
+
+  function getMotIds() {
+    const ids = new Set();
+    if (Object.keys(motTxt).length > 0) {
+      Object.keys(motTxt).forEach(frame => {
+        motTxt[frame].forEach(box => {
+          ids.add(parseInt((box.split(',')[1] || '').trim()));
+        });
+      });
+    }
+    return Array.from(ids).filter(Boolean).sort((a, b) => Number(a) - Number(b));
+  }
+
+  async function obtenerJugadores() {
+    try {
+      const res = await fetch(`/{{username}}/partido/{{partido.id}}/convocados`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return data ?? { local: [], visitante: [] };
+    } catch (err) {
+      console.error("Error en la petición de jugadores:", err);
+      return { local: [], visitante: [] };
+    }
+  }
+
+  async function obtenerJugadoresAsignados(trackingId) {
+    try {
+      const res = await fetch(`/video/analisis-automatico/${trackingId}/jugadores-asignados`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return data.jugadores_asignados ?? [];
+    } catch (err) {
+      console.error("Error en la petición de jugadores asignados:", err);
+      return [];
+    }
+  }
+
+  async function assignIdsToBoxes(trackingId) {
+    const [jugadores, jugadoresAsignados, motIds] = await Promise.all([
+      obtenerJugadores(),
+      obtenerJugadoresAsignados(trackingId),
+      Promise.resolve(getMotIds())
+    ]);
+    let optionsJugadores = jugadores.local.map(j =>
+      `<option value="${j.id}">LOCAL - ${j.nombre} ${j.apellido ?? ''} (Dorsal ${j.dorsal})</option>`
+    )
+    optionsJugadores.push(...jugadores.visitante.map(j =>
+      `<option value="${j.id}">VISITANTE - ${j.nombre} ${j.apellido ?? ''} (Dorsal ${j.dorsal})</option>`
+    ));
+    optionsJugadores = optionsJugadores.join('');
+    const asignados = Object.values(jugadoresAsignados).flat();
+    const noAsignados = motIds.filter(id => !asignados.includes(id));
+    const optionsMot = noAsignados.map(id =>
+      `<option value="${id}">${id}</option>`
+    ).join('');
+
+    const html = `
+    <div class="w-100">
+  <h5 class="mb-3">Asignar IDs de tracking MOT</h5>
+  <div class="form-group">
+    <label class="mb-1">Jugador</label>
+    <select id="jugadorSelect" class="form-control">
+      <option value="" disabled selected>Selecciona un jugador…</option>
+      ${optionsJugadores}
+    </select>
+  </div>
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="form-group mb-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <label class="mb-1 mb-0">IDs MOT disponibles</label>
+          <input id="filtroMot" type="text" class="form-control form-control-sm" placeholder="Filtrar IDs…" style="max-width:220px">
+        </div>
+        <small class="text-muted d-block mb-2">Mantén Ctrl/Cmd para seleccionar varios</small>
+        <select id="motSelect" class="form-control" multiple size="12" style="max-height:260px; overflow-y:auto;">
+          ${optionsMot}
+        </select>
+      </div>
+    </div>
+
+    <div class="col-md-2 d-flex flex-column align-items-center justify-content-center">
+      <button id="btnAsignar" type="button" class="btn btn-primary btn-sm mb-2">&raquo; Asignar</button>
+      <button id="btnQuitar" type="button" class="btn btn-outline-secondary btn-sm">&laquo; Quitar</button>
+    </div>
+
+    <div class="col-md-5">
+      <div class="form-group mb-2">
+        <label class="mb-1">IDs MOT asignados</label>
+        <small class="text-muted d-block mb-2">Selecciona y usa “Quitar” para devolverlos</small>
+        <select id="motAssigned" class="form-control" multiple size="12" style="max-height:260px; overflow-y:auto;"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center w-100 mt-2">
+    <button id="cancelarBtn" type="button" class="btn btn-outline-secondary mr-2">Cancelar</button>
+    <button id="guardarBtn" type="button" class="btn btn-primary">Guardar</button>
+  </div>
+
+  <div id="alerta" class="alert alert-danger mt-3 mb-0 d-none"></div>
+</div>
+  `;
+
+    popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+const $ = (sel) => document.querySelector(sel);
+
+function getSelectedValues(selectEl) {
+  return Array.from(selectEl.selectedOptions).map(o => Number(o.value));
+}
+
+function renderAssigned(jugadorId) {
+  const motAssigned = $('#motAssigned');
+  motAssigned.innerHTML = '';
+  const ids = jugadoresAsignados[jugadorId] ?? [];
+  ids.sort((a,b)=>a-b).forEach(id => {
+    const opt = document.createElement('option');
+    opt.value = String(id);
+    opt.textContent = String(id);
+    motAssigned.appendChild(opt);
+  });
+}
+
+function renderAvailable(motIds, jugadoresAsignadosObj, currentJugadorId, filtro = '') {
+  const usados = new Set(Object.values(jugadoresAsignadosObj).flat());
+  const motSelect = $('#motSelect');
+  motSelect.innerHTML = '';
+
+  const idsDisponibles = motIds
+    .filter(id => !usados.has(id))
+    .filter(id => String(id).includes(filtro));
+
+  idsDisponibles.sort((a,b)=>a-b).forEach(id => {
+    const opt = document.createElement('option');
+    opt.value = String(id);
+    opt.textContent = String(id);
+    motSelect.appendChild(opt);
+  });
+}
+
+function requireJugador() {
+  const jugadorId = Number($('#jugadorSelect').value);
+  if (!jugadorId) {
+    const alerta = $('#alerta');
+    alerta.textContent = 'Primero selecciona un jugador.';
+    alerta.classList.remove('d-none');
+    setTimeout(()=>alerta.classList.add('d-none'), 2000);
+    return null;
+  }
+  return jugadorId;
+}
+
+if (!jugadoresAsignados || typeof jugadoresAsignados !== 'object') {
+  window.jugadoresAsignados = {};
+}
+
+$('#jugadorSelect').addEventListener('change', (e) => {
+  const jugadorId = Number(e.target.value);
+  if (!jugadoresAsignados[jugadorId]) jugadoresAsignados[jugadorId] = [];
+  renderAssigned(jugadorId);
+  renderAvailable(motIds, jugadoresAsignados, jugadorId, $('#filtroMot').value.trim());
+});
+
+// Filtrado en tiempo real
+$('#filtroMot').addEventListener('input', (e) => {
+  const jugadorId = Number($('#jugadorSelect').value) || null;
+  renderAvailable(motIds, jugadoresAsignados, jugadorId, e.target.value.trim());
+});
+
+// ASIGNAR: izquierda -> derecha
+$('#btnAsignar').addEventListener('click', () => {
+  const jugadorId = requireJugador();
+  if (!jugadorId) return;
+
+  const seleccionados = getSelectedValues($('#motSelect'));
+  if (!seleccionados.length) return;
+
+  if (!jugadoresAsignados[jugadorId]) jugadoresAsignados[jugadorId] = [];
+
+  // Añadir evitando duplicados
+  const setActual = new Set(jugadoresAsignados[jugadorId]);
+  seleccionados.forEach(id => setActual.add(id));
+  jugadoresAsignados[jugadorId] = Array.from(setActual);
+
+  renderAssigned(jugadorId);
+  renderAvailable(motIds, jugadoresAsignados, jugadorId, $('#filtroMot').value.trim());
+});
+
+$('#btnQuitar').addEventListener('click', () => {
+  const jugadorId = requireJugador();
+  if (!jugadorId) return;
+
+  const seleccionados = getSelectedValues($('#motAssigned'));
+  if (!seleccionados.length) return;
+
+  jugadoresAsignados[jugadorId] = (jugadoresAsignados[jugadorId] || []).filter(id => !seleccionados.includes(id));
+
+  renderAssigned(jugadorId);
+  renderAvailable(motIds, jugadoresAsignados, jugadorId, $('#filtroMot').value.trim());
+});
+
+$('#guardarBtn').addEventListener('click', async () => {
+  try {
+    guardarAsignaciones(trackingId, jugadoresAsignados).then(() => {
+      popupActivo.closePopup();
+      window.location.reload();
+    });
+  } catch (e) {
+    const alerta = $('#alerta');
+    alerta.textContent = 'No se pudieron guardar los cambios.';
+    alerta.classList.remove('d-none');
+  }
+});
+
+$('#cancelarBtn').addEventListener('click', () => {
+  popup.close?.();
+});
+
+// Inicializa render (por si ya venía un jugador seleccionado)
+(() => {
+  const jugadorId = Number($('#jugadorSelect').value) || null;
+  renderAvailable(motIds, jugadoresAsignados, jugadorId);
+  if (jugadorId) renderAssigned(jugadorId);
+})();
+
+  }
+
+  async function guardarAsignaciones(trackingId, asignaciones) {
+    return fetch(`/video/analisis-automatico/${trackingId}/jugadores-asignados`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(asignaciones)
+    });
+  }
+
+  draw();
+
+</script>
+
+<script>
+
+  function updateRenderStatus(renderId, taskid) {
+    fetch(`/video/${renderId}/render/estado`)
+      .then(response => {
+        if (!response.ok) throw new Error("Error en la petición");
+        return response.json();
+      })
+      .then(data => {
+        console.log(data)
+        const row = document.querySelector(`tr[data-analysis-id="${taskid}"]`);
+        if (!row) return;
+        const actionsCell = row.querySelector("td:nth-child(4)");
+
+        if (data.estado == 1) {
+          intervalos_descargas = intervalos_descargas.filter(i => {
+            if (i.id === renderId) {
+              clearInterval(i.interval);
+              return false;
+            }
+            return true;
+          });
+          if (actionsCell) {
+            actionsCell.innerHTML = `
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button" onclick="viewAnalysisResults('${taskid}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    <div class="btn-group" style="gap: 0 !important;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="downloadRender('${renderId}')">
+                    <i class="fas fa-download"></i> Descargar
+                  </button>
+
+                  <button type="button" class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false">
+                    <span class="hidden">Toggle Dropdown</span>
+                  </button>
+
+                  <ul class="dropdown-menu ">
+                    <li><button class="dropdown-item text-danger" onclick="deleteRender('${renderId}', '${taskid}')">Eliminar</button></li>
+                  </ul>
+                </div>
+                    </div>
+              `;
+          }
+        } else if (data.estado == 0) {
+          if (actionsCell) {
+            actionsCell.innerHTML = `
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button" onclick="viewAnalysisResults('${taskid}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    <button class="btn btn-info btn-sm" disabled onclick="() => {}">
+                      ${data.progreso}% Procesando
+                    </button>
+                    </div>
+              `;
+          }
+        } else {
+          actionsCell.innerHTML = `
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button" onclick="viewAnalysisResults('${taskid}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    <div class="d-flex justify-content-start">
+                      <button class="btn btn-danger btn-sm" disabled onclick="() => {}">
+                      <i class="fas fa-download"></i> Error al procesar
+                    </button>
+
+                      <button type="button" class="btn btn-danger btn-sm dropdown-toggle dropdown-toggle-split rounded-0"
+                        data-toggle="dropdown" aria-expanded="false">
+                        <span class="hidden">Toggle Dropdown</span>
+                      </button>
+
+                      <ul class="dropdown-menu">
+                        <li><button class="dropdown-item text-danger"
+                            onclick="deleteRender('${renderId}', '${taskid}')">Eliminar</button></li>
+                      </ul>
+                    </div>
+                    
+
+                    </div>
+              `;
+              intervalos_descargas = intervalos_descargas.filter(i => {
+          if (i.id === renderId) {
+            clearInterval(i.interval);
+            return false;
+          }
+          return true;
+        });
+        }
+      })
+      .catch(err => console.error("Error actualizando tarea:", err));
+  }
+
+  function downloadRender(descargaId) {
+    const url = `/video/descarga/${descargaId}/archivo`;
+
+    fetch(url)
+      .then(response => {
+        console.log("Headers:", [...response.headers]);
+        console.log("Content-Type:", response.headers.get("Content-Type"));
+        console.log("Content-Length:", response.headers.get("Content-Length"));
+        return response.blob();
+      })
+      .then(blob => {
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = `video_${descargaId}.mp4`;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+      })
+      .catch(err => alert(err));
+  }
+
+
+
+  function updateTaskStatus(tareaId) {
+    fetch(`/video/${tareaId}/tareas/estado`)
+      .then(response => {
+        if (!response.ok) throw new Error("Error en la petición");
+        return response.json();
+      })
+      .then(data => {
+        const row = document.querySelector(`tr[data-analysis-id="${tareaId}"]`);
+        if (!row) return;
+
+        const progressCell = row.querySelector("td:nth-child(2)");
+        if (progressCell) {
+          progressCell.textContent = data.progreso + "%";
+        }
+
+        const estadoCell = row.querySelector("td:nth-child(3)");
+        if (estadoCell) {
+          if (data.estado === 0) {
+            estadoCell.innerHTML = '<span class="badge bg-warning">En progreso</span>';
+          } else if (data.estado === 1) {
+            estadoCell.innerHTML = '<span class="badge bg-success">Análisis completado</span>';
+            intervalos_tareas = intervalos_tareas.filter(i => {
+              if (i.id === tareaId) {
+                clearInterval(i.interval);
+                return false;
+              }
+              return true;
+            });
+            const actionsCell = row.querySelector("td:nth-child(4)");
+            if (actionsCell) {
+              actionsCell.innerHTML = `
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button" onclick="viewAnalysisResults('${tareaId}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="startRender('${tareaId}')">
+                      <i class="fas fa-download"></i> Procesar
+                    </button>
+                    </div>
+              `;
+            }
+          } else if (data.estado === 2) {
+            estadoCell.innerHTML = '<span class="badge bg-danger">Cancelada</span>';
+          } else if (data.estado === 3) {
+            estadoCell.innerHTML = '<span class="badge bg-secondary">Posprocesando</span>';
+          } else if (data.estado === 4) {
+            estadoCell.innerHTML = '<span class="badge bg-danger">Error</span>';
+            const actionsCell = row.querySelector("td:nth-child(4)");
+            if (actionsCell) {
+              actionsCell.innerHTML = '';
+            }
+            intervalos_tareas = intervalos_tareas.filter(i => {
+              if (i.id === tareaId) {
+                clearInterval(i.interval);
+                return false;
+              }
+              return true;
+            });
+          }
+        }
+
+      })
+      .catch(err => console.error("Error actualizando tarea:", err));
+  }
+
+  const rows = document.querySelectorAll("#analysis-list tr[data-analysis-id]");
+  rows.forEach(row => {
+    const tareaestado = row.getAttribute("data-tarea-estado");
+    console.log("Tarea ID:", tareaestado);
+    if (tareaestado != 0) return;
+    const tareaid = row.getAttribute("data-analysis-id");
+    intervalos_tareas.push({
+      id: tareaid,
+      interval: setInterval(() => {
+        updateTaskStatus(tareaid);
+      }, 1000)
+    });
+  });
+
+  function confirmDeleteRender(renderid, taskid) {
+    const url = `/video/descarga/${renderid}/archivo`;
+    $.ajax({
+      url: url,
+      type: 'DELETE',
+      success: function () {
+        if (popupActivo) popupActivo.closePopup();
+        html = `
+      <div class="popup-content">
+        <h2>La descarga ha sido eliminada</h2>
+        <p>Tendrás que volver a procesar el vídeo para poder descargarlo de nuevo.</p>
+      </div>
+    `;
+        popupActivo = new Popup(html, {
+          width: 'min(95%, 700px)',
+          height: 'auto',
+          backgroundColor: 'white',
+          closeButton: true,
+          overlay: true,
+          element: document.body
+        });
+        const row = document.querySelector(`tr[data-analysis-id="${taskid}"]`);
+        if (row) {
+          const actionsCell = row.querySelector("td:nth-child(4)");
+          if (actionsCell) {
+            actionsCell.innerHTML = `
+              <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary btn-sm me-2 tracking-button" onclick="viewAnalysisResults('${taskid}')">
+                      <i class="fas fa-eye"></i> Ver resultados
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="startRender('${taskid}')">
+                      <i class="fas fa-download"></i> Procesar
+                    </button>
+                    </div>
+            `;
+          }
+        }
+        setTimeout(() => {
+          popupActivo.closePopup();
+        }, 3000);
+      },
+      error: function (err) {
+        console.error("Error al eliminar la descarga:", err);
+        alert("Error al eliminar la descarga");
+      }
+    });
+  }
+
+  function deleteRender(renderid, taskid) {
+    html = `
+      <div class="popup-content">
+        <h2>¿Eliminar descarga?</h2>
+        <p>Tendrás que volver a procesar el vídeo para poder descargarlo</p>
+        <button id="confirm-delete" class="btn btn-danger" onclick="confirmDeleteRender('${renderid}', '${taskid}')">Eliminar</button>
+        <button id="cancel-delete" class="btn btn-secondary" onclick="popupActivo.closePopup()">Cancelar</button>
+      </div>
+    `;
+    popupActivo = new Popup(html, {
+      width: 'min(95%, 700px)',
+      height: 'auto',
+      backgroundColor: 'white',
+      closeButton: true,
+      overlay: true,
+      element: document.body
+    });
+  }
+
+</script>
+
+{% endblock %}

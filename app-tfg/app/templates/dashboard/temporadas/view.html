@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ temporada.nombre }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/temporada.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>{{ temporada.nombre }}</h1>
+        <p>{{ temporada.descripcion }}</p>
+    </div>
+    <div>
+        <a href="/{{ username }}/temporada/{{ temporada.id }}/editar" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        <button type="button" class="btn btn-danger" onclick="confirmarEliminar('{{ temporada.id }}', '{{ temporada.nombre }}')">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- Resumen de la temporada -->
+<div class="dashboard-cards">
+    <div class="dashboard-card">
+        <div class="card-icon">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <div class="card-content">
+            <p class="card-title">Ligas</p>
+            <h2 class="card-value">{{ ligas|length }}</h2>
+            <a href="#ligas-section" class="card-link">Ver todas <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="card-icon">
+            <i class="fas fa-futbol"></i>
+        </div>
+        <div class="card-content">
+            <p class="card-title">Partidos</p>
+            <h2 class="card-value">{{ partidos|length }}</h2>
+            <a href="#partidos-section" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="card-icon">
+            <i class="fas fa-video"></i>
+        </div>
+        <div class="card-content">
+            <p class="card-title">Videos</p>
+            <h2 class="card-value">{{ videos|length }}</h2>
+            <a href="#videos-section" class="card-link">Ver todos <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- Sección de ligas -->
+<div class="dashboard-section" id="ligas-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-trophy"></i> Ligas</h3>
+        <a href="/{{ username }}/temporada/{{ temporada.id }}/liga/nueva" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nueva Liga
+        </a>
+    </div>
+    <div class="section-body">
+        {% if ligas %}
+        <div class="ligas-grid">
+            {% for liga in ligas %}
+            <div class="liga-card">
+                <h4>{{ liga.nombre }}</h4>
+                <p>Categoría: {{ liga.categoria.nombre }}</p>
+                <p>Equipos: {{ liga.equipo_ligas|length }}</p>
+                <a href="/{{ username }}/liga/{{ liga.id }}" class="btn btn-primary">Ver Liga</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-trophy"></i>
+            <h3>No hay ligas</h3>
+            <p>Comienza creando tu primera liga</p>
+            <a href="/{{ username }}/temporada/{{ temporada.id }}/liga/nueva" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nueva Liga
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sección de partidos -->
+<div class="dashboard-section" id="partidos-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-futbol"></i> Partidos</h3>
+        <a href="/{{ username }}/temporada/{{ temporada.id }}/partido/nuevo" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Partido
+        </a>
+    </div>
+    <div class="section-body">
+        {% if partidos %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Liga</th>
+                        <th>Local</th>
+                        <th>Resultado</th>
+                        <th>Visitante</th>
+                        <th>Videos</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for partido in partidos %}
+                    <tr>
+                        <td>{{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>{% if partido.liga %}<a href="/{{ username }}/liga/{{ partido.liga.id }}">{{ partido.liga.nombre }}</a>{% else %}Sin liga{% endif %}</td>
+                        <td><a href="/{{ username }}/equipo/{{ partido.equipo_local.id }}">{{ partido.equipo_local.nombre }}</a></td>
+                        <td class="text-center"><span class="resultado">{{ partido.resultado }}</span></td>
+                        <td><a href="/{{ username }}/equipo/{{ partido.equipo_visitante.id }}">{{ partido.equipo_visitante.nombre }}</a></td>
+                        <td>{{ partido.videos|length }}</td>
+                        <td>
+                            <a href="/{{ username }}/partido/{{ partido.id }}" class="btn btn-sm btn-primary">Ver</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-futbol"></i>
+            <h3>No hay partidos</h3>
+            <p>Comienza creando tu primer partido</p>
+            <a href="/{{ username }}/temporada/{{ temporada.id }}/partido/nuevo" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nuevo Partido
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sección de videos -->
+<div class="dashboard-section" id="videos-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-video"></i> Videos</h3>
+    </div>
+    <div class="section-body">
+        {% if videos %}
+        <div class="videos-grid">
+            {% for video in videos %}
+            <div class="video-card">
+                <a href="/{{ username }}/video/{{ video.id }}">
+                    {% set liga_path = "liga_" + video.partido.liga.id|string if video.partido.liga else "sin_liga" %}
+                    <img src="/uploads/{{ username }}/temporada_{{ temporada.id }}/{{ liga_path }}/partido_{{ video.partido_id }}/{{ video.filename|replace('.mp4', '_thumb.jpg') }}" 
+                         alt="Miniatura de {{ video.filename }}">
+                </a>
+                <div class="video-info">
+                    <h4>{{ video.filename }}</h4>
+                    <p>{{ video.partido.equipo_local.nombre }} {{ video.partido.resultado }} {{ video.partido.equipo_visitante.nombre }}</p>
+                    <p><small>{{ video.uploaded_at.strftime('%d/%m/%Y') }}</small></p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-video"></i>
+            <h3>No hay videos</h3>
+            <p>Sube videos a tus partidos para analizarlos</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar la temporada <strong id="temporada-nombre"></strong>?</p>
+                <p class="text-danger">Esta acción eliminará también todas las ligas, partidos y videos asociados a esta temporada.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="form-eliminar" method="POST">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('temporada-nombre').textContent = nombre;
+        document.getElementById('form-eliminar').action = '/{{ username }}/temporada/' + id + '/eliminar';
+        $('#eliminarModal').modal('show');
+    }
+</script>
+{% endblock %}

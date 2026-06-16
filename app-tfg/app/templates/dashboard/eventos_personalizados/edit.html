@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Evento Personalizado - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Editar Evento Personalizado</h1>
+        <p>Modifica los detalles de tu evento personalizado</p>
+    </div>
+    <div class="module-actions">
+        <a href="{{ url_for('evento_personalizado_routes.listar_eventos_personalizados', username=username) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-body">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="form-group mb-3">
+                                <label for="nombre">Nombre del Evento *</label>
+                                <input type="text" class="form-control" id="nombre" name="nombre" required maxlength="50" 
+                                       value="{{ evento.nombre }}" placeholder="Ej: Gol con la izquierda, Pase largo, etc.">
+                                <small class="form-text text-muted">Nombre descriptivo para el evento (máximo 50 caracteres)</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="categoria_id">Categoría *</label>
+                                <select class="form-control" id="categoria_id" name="categoria_id" required onchange="mostrarInfoCategoria()">
+                                    <option value="">Selecciona una categoría</option>
+                                    {% for categoria in categorias %}
+                                        <option value="{{ categoria.id }}" data-nombre="{{ categoria.nombre }}" 
+                                                {% if categoria.id == evento.categoria_evento_id %}selected{% endif %}>
+                                            {{ categoria.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">La categoría determina automáticamente el tipo de evento</small>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="estadistica_tipo">Tipo de Estadística (Opcional)</label>
+                                <select class="form-control" id="estadistica_tipo" name="estadistica_tipo">
+                                    <option value="" {% if not evento.estadistica_tipo %}selected{% endif %}>No incluir en estadísticas</option>
+                                    <option value="gol" {% if evento.estadistica_tipo == 'gol' %}selected{% endif %}>Gol (para categorías de tiros/penaltis)</option>
+                                    <option value="falta" {% if evento.estadistica_tipo == 'falta' %}selected{% endif %}>Falta (para categorías de faltas)</option>
+                                    <option value="perdida" {% if evento.estadistica_tipo == 'perdida' %}selected{% endif %}>Pérdida (para categorías de pérdidas)</option>
+                                    <option value="recuperacion" {% if evento.estadistica_tipo == 'recuperacion' %}selected{% endif %}>Recuperación (para categorías de recuperaciones)</option>
+                                </select>
+                                <small class="form-text text-muted">
+                                    Si seleccionas un tipo, este evento personalizado se contabilizará en las estadísticas en tiempo real del video
+                                </small>
+                            </div>
+                            
+                            <div id="categoria-info" class="alert alert-info mt-3" style="display: none;">
+                                <h6 class="alert-heading">Información de la categoría</h6>
+                                <div id="categoria-descripcion"></div>
+                            </div>
+                            
+                            <div class="form-group text-end">
+                                <a href="{{ url_for('evento_personalizado_routes.listar_eventos_personalizados', username=username) }}" class="btn btn-secondary me-2">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Actualizar Evento
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function mostrarInfoCategoria() {
+    const select = document.getElementById('categoria_id');
+    const infoDiv = document.getElementById('categoria-info');
+    const descripcionDiv = document.getElementById('categoria-descripcion');
+    
+    if (select.value) {
+        const selectedOption = select.options[select.selectedIndex];
+        const categoriaNombre = selectedOption.getAttribute('data-nombre');
+        
+        let descripcion = '';
+        let sugerenciasEstadisticas = '';
+        
+        switch(categoriaNombre.toLowerCase()) {
+            case 'táctica':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Equipo</p>
+                    <p>Los eventos de equipo se asignan a todo el equipo y no a jugadores individuales.</p>
+                    <p>Ejemplos: Presión alta, Defensa en zona, Ataque posicional, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> Generalmente no se incluyen en estadísticas individuales.</p>
+                `;
+                break;
+            case 'global':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento Global</p>
+                    <p>Los eventos globales afectan al partido en general y no requieren seleccionar jugador o equipo.</p>
+                    <p>Ejemplos: Pausa técnica, Cambio de clima, Interrupción, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> Generalmente no se incluyen en estadísticas.</p>
+                `;
+                break;
+            case 'tiros':
+            case 'penaltis':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Jugador</p>
+                    <p>Los eventos de jugador se asignan a jugadores individuales.</p>
+                    <p>Ejemplos: Gol con la izquierda, Tiro a portería, Penalty fallado, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> <span class="badge bg-success">Gol</span> para eventos que resulten en gol.</p>
+                `;
+                break;
+            case 'faltas':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Jugador</p>
+                    <p>Los eventos de jugador se asignan a jugadores individuales.</p>
+                    <p>Ejemplos: Falta técnica, Falta de ataque, Exclusión personalizada, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> <span class="badge bg-warning">Falta</span> para eventos de infracciones.</p>
+                `;
+                break;
+            case 'pérdidas':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Jugador</p>
+                    <p>Los eventos de jugador se asignan a jugadores individuales.</p>
+                    <p>Ejemplos: Pérdida por mal pase, Pérdida por pasos, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> <span class="badge bg-danger">Pérdida</span> para eventos de pérdida de balón.</p>
+                `;
+                break;
+            case 'recuperaciones':
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Jugador</p>
+                    <p>Los eventos de jugador se asignan a jugadores individuales.</p>
+                    <p>Ejemplos: Intercepción, Robo de balón, Recuperación defensiva, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> <span class="badge bg-info">Recuperación</span> para eventos de recuperación de balón.</p>
+                `;
+                break;
+            default:
+                descripcion = `
+                    <p><strong>Tipo:</strong> Evento de Jugador</p>
+                    <p>Los eventos de jugador se asignan a jugadores individuales.</p>
+                    <p>Ejemplos: Gol con la izquierda, Pase largo, Regate, etc.</p>
+                `;
+                sugerenciasEstadisticas = `
+                    <p><strong>Estadísticas recomendadas:</strong> Selecciona el tipo según la naturaleza del evento.</p>
+                `;
+                break;
+        }
+        
+        descripcionDiv.innerHTML = descripcion + sugerenciasEstadisticas;
+        infoDiv.style.display = 'block';
+    } else {
+        infoDiv.style.display = 'none';
+    }
+}
+
+// Mostrar información al cargar la página si ya hay una categoría seleccionada
+document.addEventListener('DOMContentLoaded', function() {
+    mostrarInfoCategoria();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+import os
+
+class Config:
+    # Configuración de la base de datos MySQL usando variables de entorno
+    MYSQL_USER = os.environ.get("MYSQL_USER", "tfg")
+    MYSQL_PASSWORD = os.environ.get("MYSQL_PASSWORD", "tfg1234")
+    MYSQL_HOST = os.environ.get("MYSQL_HOST", "localhost")
+    MYSQL_DATABASE = os.environ.get("MYSQL_DATABASE", "mikel")
+    MYSQL_PORT = os.environ.get("MYSQL_PORT", 3306)
+    # Carpeta de subidas (apunta a la carpeta compartida por Docker)
+    UPLOAD_FOLDER = os.environ.get("SHARED_DIR", os.path.abspath("../app/Almacenamiento/uploads"))
+    POSTPROCESS_URL = os.environ.get("POSTPROCESS_URL", "http://localhost:5002/postprocesado")
+    TRACK_HIGH_THRESH = float(os.environ.get("TRACK_HIGH_THRESH", 0.6))
+    TRACK_LOW_THRESH = float(os.environ.get("TRACK_LOW_THRESH", 0.1))
+    NEW_TRACK_THRESH = float(os.environ.get("NEW_TRACK_THRESH", 0.7))
+    TRACK_BUFFER = int(os.environ.get("TRACK_BUFFER", 60))
+    MATCH_THRESH = float(os.environ.get("MATCH_THRESH", 0.8))
+    ASPECT_RATIO_THRESH = float(os.environ.get("ASPECT_RATIO_THRESH", 1.6))
+    MIN_BOX_AREA = int(os.environ.get("MIN_BOX_AREA", 10))
+    NMS_THRES = float(os.environ.get("NMS_THRES", 0.7))
+    MOT20 = bool(os.environ.get("MOT20", False))
+    WITH_REID = bool(os.environ.get("WITH_REID", True))
+    PROXIMITY_THRESH = float(os.environ.get("PROXIMITY_THRESH", 0.5))
+    APPEARANCE_THRESH = float(os.environ.get("APPEARANCE_THRESH", 0.25))
+    print(f"Conectando a MySQL en {MYSQL_HOST}:{MYSQL_PORT}")
+    print(f"Base de datos: {MYSQL_DATABASE}")
+    print(f"Carpeta de subidas: {UPLOAD_FOLDER}")

@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Ligas - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+   <div>
+       <h1>Ligas</h1>
+       <p>Gestiona tus ligas deportivas</p>
+   </div>
+   <div>
+       {% if temporadas %}
+       <a href="/{{ username }}/temporada/{{ temporadas[0].id }}/liga/nueva" class="btn btn-primary">
+           <i class="fas fa-plus"></i> Nueva Liga
+       </a>
+       {% else %}
+       <button class="btn btn-primary" disabled title="Debes crear una temporada primero">
+           <i class="fas fa-plus"></i> Nueva Liga
+       </button>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Filtros -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-filter"></i> Filtros</h3>
+   </div>
+   <div class="section-body">
+       <form method="GET" action="/{{ username }}/ligas" class="filter-form">
+           <div class="form-row">
+               <div class="form-group col-md-4">
+                   <label for="temporada_id"><i class="fas fa-calendar-alt"></i> Temporada:</label>
+                   <select name="temporada_id" id="temporada_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for temporada in temporadas %}
+                           <option value="{{ temporada.id }}" {% if temporada_id and temporada.id == temporada_id|int %}selected{% endif %}>
+                               {{ temporada.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-4">
+                   <label for="categoria_id"><i class="fas fa-layer-group"></i> Categoría:</label>
+                   <select name="categoria_id" id="categoria_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for categoria in categorias %}
+                           <option value="{{ categoria.id }}" {% if categoria_id and categoria.id == categoria_id|int %}selected{% endif %}>
+                               {{ categoria.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-4 d-flex align-items-end">
+                   <button type="submit" class="btn btn-primary mr-2"><i class="fas fa-search"></i> Filtrar</button>
+                   <a href="/{{ username }}/ligas" class="btn btn-secondary"><i class="fas fa-undo"></i> Restablecer</a>
+               </div>
+           </div>
+       </form>
+   </div>
+</div>
+
+<!-- Listado de ligas -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-trophy"></i> Mis Ligas</h3>
+   </div>
+   <div class="section-body">
+       {% if ligas %}
+       <div class="table-responsive">
+           <table class="table">
+               <thead>
+                   <tr>
+                       <th>Nombre</th>
+                       <th>Temporada</th>
+                       <th>Categoría</th>
+                       <th>Equipos</th>
+                       <th>Partidos</th>
+                       <th>Acciones</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for liga in ligas %}
+                   <tr>
+                       <td>{{ liga.nombre }}</td>
+                       <td><a href="/{{ username }}/temporada/{{ liga.temporada.id }}">{{ liga.temporada.nombre }}</a></td>
+                       <td>{{ liga.categoria.nombre }}</td>
+                       <td>{{ liga.equipo_ligas|length }}</td>
+                       <td>{{ liga.partidos|length }}</td>
+                       <td data-label="Acciones" class="actions">
+                           <div class="btn-group">
+                               <a href="/{{ username }}/liga/{{ liga.id }}" class="btn btn-view btn-sm">
+                                   <i class="fas fa-eye"></i> <span>Ver</span>
+                               </a>
+                               <a href="/{{ username }}/liga/{{ liga.id }}/editar" class="btn btn-edit btn-sm">
+                                   <i class="fas fa-edit"></i> <span>Editar</span>
+                               </a>
+                               <button type="button" class="btn btn-delete btn-sm" onclick="confirmarEliminar('{{ liga.id }}', '{{ liga.nombre }}')">
+                                   <i class="fas fa-trash"></i> <span>Eliminar</span>
+                               </button>
+                           </div>
+                       </td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+       {% else %}
+       <div class="empty-state">
+           <i class="fas fa-trophy"></i>
+           <h3>No hay ligas</h3>
+           <p>Comienza creando tu primera liga</p>
+           {% if temporadas %}
+           <a href="/{{ username }}/temporada/{{ temporadas[0].id }}/liga/nueva" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Nueva Liga
+           </a>
+           {% else %}
+           <a href="/{{ username }}/temporada/nueva" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Crear Temporada Primero
+           </a>
+           {% endif %}
+       </div>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+               </button>
+           </div>
+           <div class="modal-body">
+               <p>¿Estás seguro de que quieres eliminar la liga <strong id="liga-nombre"></strong>?</p>
+               <p class="text-danger">Esta acción eliminará también todos los partidos asociados a esta liga.</p>
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+               <form id="form-eliminar" method="POST">
+                   <button type="submit" class="btn btn-danger">Eliminar</button>
+               </form>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+   function confirmarEliminar(id, nombre) {
+       document.getElementById('liga-nombre').textContent = nombre;
+       document.getElementById('form-eliminar').action = '/{{ username }}/liga/' + id + '/eliminar';
+       $('#eliminarModal').modal('show');
+   }
+</script>
+{% endblock %}

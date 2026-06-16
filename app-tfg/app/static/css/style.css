@@ -1,0 +1,82 @@
+/* Estilos para las insignias (badges) */
+.badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow
+      0.15s ease-in-out;
+  }
+  
+  .badge-success {
+    color: #fff;
+    background-color: #28a745;
+  }
+  
+  .badge-warning {
+    color: #212529;
+    background-color: #ffc107;
+  }
+  
+  .badge-info {
+    color: #fff;
+    background-color: #17a2b8;
+  }
+  
+  .badge-primary {
+    color: #fff;
+    background-color: #007bff;
+  }
+  
+  .badge-secondary {
+    color: #fff;
+    background-color: #6c757d;
+  }
+  
+  .badge-danger {
+    color: #fff;
+    background-color: #dc3545;
+  }
+  
+  .alert {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+  }
+  
+  .alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+  }
+  
+  .alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+  }
+  
+  .alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+  }
+  
+  .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+  }
+  
+  .text-muted {
+    color: #6c757d !important;
+  }
+  
+  

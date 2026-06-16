@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Liga - {{ liga.nombre }}{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Editar Liga</h1>
+        <p>Modifica los datos de la liga</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-edit"></i> Datos de la Liga</h3>
+    </div>
+    <div class="section-body">
+        <div class="form-container">
+            <form action="{{ url_for('liga_routes.editar_liga', username=username, liga_id=liga.id) }}" method="POST">
+                <div class="form-group">
+                    <label for="nombre"><i class="fas fa-tag"></i> Nombre de la Liga:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" value="{{ liga.nombre }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion"><i class="fas fa-align-left"></i> Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="3">{{ liga.descripcion }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="temporada_id"><i class="fas fa-calendar-alt"></i> Temporada:</label>
+                    <select id="temporada_id" name="temporada_id" class="form-control" required>
+                        <option value="">Selecciona una temporada</option>
+                        {% for temporada in temporadas %}
+                        <option value="{{ temporada.id }}" {% if liga.temporada_id == temporada.id %}selected{% endif %}>{{ temporada.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoria_id"><i class="fas fa-layer-group"></i> Categoría:</label>
+                    <select id="categoria_id" name="categoria_id" class="form-control" required>
+                        <option value="">Selecciona una categoría</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if liga.categoria_id == categoria.id %}selected{% endif %}>{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a href="/{{ username }}/liga/{{ liga.id }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

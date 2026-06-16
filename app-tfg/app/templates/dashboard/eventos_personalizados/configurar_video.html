@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}Configurar Eventos - {{ video.filename }} - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1><i class="fas fa-cogs"></i> Configurar Eventos para Video</h1>
+        <p class="text-muted">Selecciona qué eventos quieres usar para anotar este video específico</p>
+    </div>
+    <div class="module-actions">
+        <a href="{{ url_for('video_routes.ver_video', username=username, video_id=video.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Video
+        </a>
+    </div>
+</div>
+
+<!-- Información del Video -->
+<div class="dashboard-section mb-4">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-video"></i> Información del Video</h3>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="card-title mb-2">
+                                    <i class="fas fa-play-circle text-primary"></i> {{ video.filename }}
+                                </h5>
+                                <div class="video-info">
+                                    <p class="mb-1">
+                                        <strong><i class="fas fa-futbol"></i> Partido:</strong> 
+                                        {{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong><i class="fas fa-calendar"></i> Fecha:</strong> 
+                                        {{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong><i class="fas fa-clock"></i> Duración:</strong> 
+                                        {{ video.duracion_segundos // 60 }}:{{ '%02d' % (video.duracion_segundos % 60) }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="video-stats">
+                                    <span class="badge bg-info fs-6">
+                                        <i class="fas fa-tags"></i> 
+                                        {{ eventos_seleccionados|length }} eventos configurados
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuración de Eventos -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-list-check"></i> Selección de Eventos</h3>
+        <div class="section-actions">
+            <a href="{{ url_for('evento_personalizado_routes.listar_eventos_personalizados', username=username) }}" 
+               class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-plus"></i> Gestionar Eventos Personalizados
+            </a>
+        </div>
+    </div>
+    <div class="section-body">
+        <form method="POST" action="{{ url_for('evento_personalizado_routes.guardar_eventos_video', username=username, video_id=video.id) }}">
+            
+            <!-- Eventos Estándar -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="usar_todos_estandar" onchange="toggleEventosEstandar(this.checked)">
+                            <label class="form-check-label fw-bold" for="usar_todos_estandar">
+                                <i class="fas fa-star text-warning"></i> Eventos Estándar
+                            </label>
+                        </div>
+                        <small class="text-muted">Eventos base del sistema</small>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        {% for categoria_nombre, datos in eventos_por_categoria.items() %}
+                            {% if datos.eventos_base and datos.eventos_base|length > 0 %}
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="categoria-group">
+                                        <h6 class="categoria-title">
+                                            <i class="fas fa-folder text-primary"></i> {{ categoria_nombre }}
+                                            <small class="text-muted">({{ datos.eventos_base|length }} eventos)</small>
+                                        </h6>
+                                        <div class="eventos-list">
+                                            {% for evento in datos.eventos_base %}
+                                                <div class="evento-item">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input evento-estandar" 
+                                                               type="checkbox" 
+                                                               id="evento_base_{{ evento.id }}" 
+                                                               name="eventos_estandar" 
+                                                               value="{{ evento.id }}"
+                                                               {% if evento.seleccionado %}checked{% endif %}>
+                                                        <label class="form-check-label" for="evento_base_{{ evento.id }}">
+                                                            {{ evento.nombre }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> 
+                                        La categoría "{{ categoria_nombre }}" no tiene eventos disponibles.
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not eventos_por_categoria or eventos_por_categoria|length == 0 %}
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    No se encontraron categorías de eventos.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Eventos Personalizados -->
+            {% if eventos_personalizados %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="usar_todos_personalizados" onchange="toggleEventosPersonalizados(this.checked)">
+                                <label class="form-check-label fw-bold" for="usar_todos_personalizados">
+                                    <i class="fas fa-user-cog text-success"></i> Mis Eventos Personalizados
+                                </label>
+                            </div>
+                            <small class="text-muted">Eventos creados por ti</small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            {% for categoria in categorias %}
+                                {% set eventos_categoria = eventos_personalizados|selectattr('categoria_evento_id', 'equalto', categoria.id)|list %}
+                                {% if eventos_categoria %}
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="categoria-group">
+                                            <h6 class="categoria-title">
+                                                <i class="fas fa-folder text-success"></i> {{ categoria.nombre }}
+                                            </h6>
+                                            <div class="eventos-list">
+                                                {% for evento in eventos_categoria %}
+                                                    <div class="evento-item evento-personalizado">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input evento-personalizado-input" 
+                                                                   type="checkbox" 
+                                                                   id="evento_personalizado_{{ evento.id }}" 
+                                                                   name="eventos_personalizados" 
+                                                                   value="{{ evento.id }}"
+                                                                   {% if evento.id in personalizados_seleccionados %}checked{% endif %}>
+                                                            <label class="form-check-label" for="evento_personalizado_{{ evento.id }}">
+                                                                {{ evento.nombre }}
+                                                                <small class="text-success">(Personalizado)</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card mb-4 border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-info-circle text-warning fa-2x mb-3"></i>
+                        <h5>No tienes eventos personalizados</h5>
+                        <p class="text-muted">Crea eventos personalizados para adaptarlos a tus necesidades específicas</p>
+                        <a href="{{ url_for('evento_personalizado_routes.listar_eventos_personalizados', username=username) }}" 
+                           class="btn btn-warning">
+                            <i class="fas fa-plus"></i> Crear Primer Evento Personalizado
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                <div class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    Los eventos seleccionados estarán disponibles para anotar en este video
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('video_routes.ver_video', username=username, video_id=video.id) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Configuración
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.categoria-group {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    height: 100%;
+}
+
+.categoria-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.eventos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.evento-item {
+    background: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+
+.evento-item:hover {
+    background: #f1f3f4;
+    border-color: #007bff;
+}
+
+.evento-item.evento-personalizado {
+    background: #f0f9f0;
+    border-color: #28a745;
+}
+
+.evento-item.evento-personalizado:hover {
+    background: #e8f5e8;
+}
+
+.form-check-label {
+    cursor: pointer;
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+.video-info p {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.video-info i {
+    width: 16px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.video-stats .badge {
+    padding: 8px 12px;
+}
+
+.btn-group .btn {
+    margin-left: 8px;
+}
+
+.btn-group .btn:first-child {
+    margin-left: 0;
+}
+</style>
+
+<script>
+function toggleEventosEstandar(checked) {
+    const checkboxes = document.querySelectorAll('.evento-estandar');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = checked;
+    });
+}
+
+function toggleEventosPersonalizados(checked) {
+    const checkboxes = document.querySelectorAll('.evento-personalizado-input');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = checked;
+    });
+}
+
+// Actualizar contador de eventos seleccionados
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][name^="eventos"]');
+    const badge = document.querySelector('.video-stats .badge');
+    
+    function updateCounter() {
+        const selected = document.querySelectorAll('input[type="checkbox"][name^="eventos"]:checked').length;
+        badge.innerHTML = `<i class="fas fa-tags"></i> ${selected} eventos configurados`;
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCounter);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "./layout.html" %}
+
+{% block title %}MIKEL - Página no encontrada{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <div class="error-content">
+        <div class="error-code">404</div>
+        <h1 class="error-title">¡Oops! Te has salido del campo</h1>
+        <div class="error-icon">
+            <i class="fas fa-futbol fa-bounce"></i>
+        </div>
+        <p class="error-message">
+            Parece que intentaste marcar desde fuera de los límites... pero esta página no existe.
+        </p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary btn-lg">
+                <i class="fas fa-home"></i> Volver al inicio
+            </a>
+            {% if session.get('user_id') %}
+            <a href="/{{ session.username }}/dashboard" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-tachometer-alt"></i> Ir al dashboard
+            </a>
+            {% endif %}
+        </div>
+        <p class="error-tip">Recuerda: ¡Siempre dentro de los siete metros!</p>
+    </div>
+</div>
+
+<style>
+    .error-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 2rem;
+    }
+    
+    .error-content {
+        text-align: center;
+        max-width: 600px;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .error-code {
+        font-size: 8rem;
+        font-weight: 900;
+        color: #007bff;
+        line-height: 1;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 0 #e6f2ff;
+    }
+    
+    .error-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #333;
+    }
+    
+    .error-icon {
+        font-size: 5rem;
+        color: #007bff;
+        margin: 1.5rem 0;
+    }
+    
+    .error-message {
+        font-size: 1.2rem;
+        color: #555;
+        margin-bottom: 2rem;
+    }
+    
+    .error-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .error-tip {
+        font-size: 1rem;
+        color: #777;
+        font-style: italic;
+    }
+    
+    /* Animación para el icono */
+    .fa-bounce {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-30px);
+        }
+        60% {
+            transform: translateY(-15px);
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .error-code {
+            font-size: 6rem;
+        }
+        
+        .error-title {
+            font-size: 1.8rem;
+        }
+        
+        .error-content {
+            padding: 2rem;
+        }
+    }
+</style>
+{% endblock %}

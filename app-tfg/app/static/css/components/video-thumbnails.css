@@ -1,0 +1,18 @@
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.video-card img {
+  width: calc(100% - 20px);
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  margin: 10px;
+  border-radius: 6px;
+}
+
+.video-info {
+  padding: 15px;
+}

@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block title %}Bienvenido a MIKEL{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>MIKEL</h1>
+        <p class="hero-subtitle">Modelo Integrado para la Captura, Evaluación y Lectura del juego</p>
+        <div class="hero-actions">
+            {% if session.get('user_id') %}
+                <a href="/{{ session.username }}/dashboard" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt"></i> Ir al Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('user_routes.login') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+                <a href="{{ url_for('user_routes.register') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo de MIKEL">
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title">Características Principales</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Gestión de Equipos</h3>
+                <p>Administra tus equipos, jugadores y cuerpo técnico de manera eficiente. Organiza la información por categorías y mantén un registro detallado.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3>Ligas y Competiciones</h3>
+                <p>Crea y gestiona ligas, torneos y competiciones. Programa partidos, registra resultados y mantén clasificaciones actualizadas.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3>Análisis de Videos</h3>
+                <p>Sube y analiza videos de partidos y entrenamientos. Marca momentos clave, registra eventos y comparte observaciones con tu equipo.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>Estadísticas Avanzadas</h3>
+                <p>Accede a estadísticas detalladas de equipos y jugadores. Visualiza tendencias, identifica fortalezas y áreas de mejora.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="how-it-works-section">
+    <div class="container">
+        <h2 class="section-title">Cómo Funciona</h2>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Crea tu cuenta</h3>
+                    <p>Regístrate en nuestra plataforma para comenzar a gestionar tus equipos y competiciones.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Configura tus equipos</h3>
+                    <p>Añade tus equipos, jugadores y cuerpo técnico. Organiza la información por categorías.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Crea temporadas y ligas</h3>
+                    <p>Organiza tus competiciones por temporadas y crea ligas para gestionar los partidos.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Analiza y mejora</h3>
+                    <p>Sube videos, registra eventos y analiza estadísticas para mejorar el rendimiento de tus equipos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <h2>¿Listo para comenzar?</h2>
+        <p>Únete a MIKEL hoy mismo y lleva la gestión de tus equipos al siguiente nivel.</p>
+        {% if not session.get('user_id') %}
+            <div class="cta-buttons">
+                <a href="{{ url_for('user_routes.register') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-user-plus"></i> Crear Cuenta Gratis
+                </a>
+                <a href="{{ url_for('user_routes.login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </a>
+            </div>
+        {% else %}
+            <div class="cta-buttons">
+                <a href="/{{ session.username }}/dashboard" class="btn btn-primary btn-lg">
+                    <i class="fas fa-tachometer-alt"></i> Ir al Dashboard
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

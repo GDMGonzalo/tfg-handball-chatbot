@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Equipo a Liga - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Agregar Equipo a Liga</h1>
+        <p>Liga: {{ liga.nombre }}</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información de la Liga</h3>
+    </div>
+    <div class="section-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-trophy"></i> Categoría:</span>
+                <span class="info-value">{{ liga.categoria.nombre }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-calendar-alt"></i> Temporada:</span>
+                <span class="info-value"><a href="/{{ username }}/temporada/{{ temporada.id }}">{{ temporada.nombre }}</a></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-users"></i> Seleccionar Equipo</h3>
+    </div>
+    <div class="section-body">
+        {% if equipos %}
+        <div class="form-container">
+            <form action="{{ url_for('liga_routes.agregar_equipo_liga', username=username, liga_id=liga.id) }}" method="POST">
+                <div class="form-group">
+                    <label for="equipo_id"><i class="fas fa-users"></i> Selecciona un equipo:</label>
+                    <select id="equipo_id" name="equipo_id" class="form-control" required>
+                        <option value="">Selecciona un equipo</option>
+                        {% for equipo in equipos %}
+                        <option value="{{ equipo.id }}">{{ equipo.nombre }} ({{ equipo.tipo|capitalize }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Agregar Equipo
+                    </button>
+                    <a href="{{ url_for('liga_routes.ver_liga', username=username, liga_id=liga.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users"></i>
+            <h3>No hay equipos disponibles</h3>
+            <p>Todos los equipos ya están en la liga o no hay equipos creados</p>
+            <div class="empty-actions">
+                <a href="/{{ username }}/equipos/nuevo" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Nuevo Equipo
+                </a>
+                <a href="{{ url_for('liga_routes.ver_liga', username=username, liga_id=liga.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver a la Liga
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

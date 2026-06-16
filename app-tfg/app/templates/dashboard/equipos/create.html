@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Equipo - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Nuevo Equipo</h1>
+        <p>Crea un nuevo equipo deportivo</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-users"></i> Datos del Equipo</h3>
+    </div>
+    <div class="section-body">
+        <div class="form-container">
+            <form method="POST" action="/{{ username }}/equipos/nuevo">
+                <div class="form-group">
+                    <label for="nombre"><i class="fas fa-tag"></i> Nombre del Equipo:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Ej: Real Madrid, Barcelona, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipo"><i class="fas fa-venus-mars"></i> Tipo:</label>
+                    <select id="tipo" name="tipo" class="form-control" required>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                        <option value="mixto" selected>Mixto</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Equipo
+                    </button>
+                    <a href="/{{ username }}/equipos" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <div class="info-box">
+            <p>Después de crear un equipo, podrás:</p>
+            <ul>
+                <li>Añadir jugadores y entrenadores</li>
+                <li>Asignar posiciones y roles</li>
+                <li>Incluir el equipo en ligas</li>
+                <li>Programar partidos</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

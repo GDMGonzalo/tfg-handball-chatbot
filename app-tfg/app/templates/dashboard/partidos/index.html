@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Partidos - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+   <div>
+       <h1>Partidos</h1>
+       <p>Gestiona tus partidos deportivos</p>
+   </div>
+   <div>
+       {% if temporadas %}
+       <a href="/{{ username }}/temporada/{{ temporadas[0].id }}/partido/nuevo" class="btn btn-primary">
+           <i class="fas fa-plus"></i> Nuevo Partido
+       </a>
+       {% else %}
+       <button class="btn btn-primary" disabled title="Debes crear una temporada primero">
+           <i class="fas fa-plus"></i> Nuevo Partido
+       </button>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Filtros -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-filter"></i> Filtros</h3>
+   </div>
+   <div class="section-body">
+       <form method="GET" action="/{{ username }}/partidos" class="filter-form">
+           <div class="form-row">
+               <div class="form-group col-md-3">
+                   <label for="temporada_id"><i class="fas fa-calendar-alt"></i> Temporada:</label>
+                   <select name="temporada_id" id="temporada_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for temporada in temporadas %}
+                           <option value="{{ temporada.id }}" {% if temporada_id and temporada.id == temporada_id|int %}selected{% endif %}>
+                               {{ temporada.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3">
+                   <label for="liga_id"><i class="fas fa-trophy"></i> Liga:</label>
+                   <select name="liga_id" id="liga_id" class="form-control">
+                       <option value="">Todas</option>
+                       {% for liga in ligas %}
+                           <option value="{{ liga.id }}" {% if liga_id and liga.id == liga_id|int %}selected{% endif %}>
+                               {{ liga.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3">
+                   <label for="equipo_id"><i class="fas fa-users"></i> Equipo:</label>
+                   <select name="equipo_id" id="equipo_id" class="form-control">
+                       <option value="">Todos</option>
+                       {% for equipo in equipos %}
+                           <option value="{{ equipo.id }}" {% if equipo_id and equipo.id == equipo_id|int %}selected{% endif %}>
+                               {{ equipo.nombre }}
+                           </option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="form-group col-md-3 d-flex align-items-end">
+                   <button type="submit" class="btn btn-primary mr-2"><i class="fas fa-search"></i> Filtrar</button>
+                   <a href="/{{ username }}/partidos" class="btn btn-secondary"><i class="fas fa-undo"></i> Restablecer</a>
+               </div>
+           </div>
+       </form>
+   </div>
+</div>
+
+<!-- Listado de partidos -->
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-futbol"></i> Mis Partidos</h3>
+   </div>
+   <div class="section-body">
+       {% if partidos %}
+       <div class="table-responsive">
+           <table class="table">
+               <thead>
+                   <tr>
+                       <th>Fecha</th>
+                       <th>Liga</th>
+                       <th>Local</th>
+                       <th>Resultado</th>
+                       <th>Visitante</th>
+                       <th>Videos</th>
+                       <th>Acciones</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for partido in partidos %}
+                   <tr>
+                       <td>{{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                       <td>{% if partido.liga %}<a href="/{{ username }}/liga/{{ partido.liga.id }}">{{ partido.liga.nombre }}</a>{% else %}Sin liga{% endif %}</td>
+                       <td><a href="/{{ username }}/equipo/{{ partido.equipo_local.id }}">{{ partido.equipo_local.nombre }}</a></td>
+                       <td class="text-center"><span class="resultado">{{ partido.goles_local_calculado }}-{{ partido.goles_visitante_calculado }}</span></td>
+                       <td><a href="/{{ username }}/equipo/{{ partido.equipo_visitante.id }}">{{ partido.equipo_visitante.nombre }}</a></td>
+                       <td>{{ partido.videos|length }}</td>
+                       <td data-label="Acciones" class="actions">
+                           <div class="btn-group">
+                               <a href="/{{ username }}/partido/{{ partido.id }}" class="btn btn-view btn-sm">
+                                   <i class="fas fa-eye"></i> <span>Ver</span>
+                               </a>
+                               <a href="/{{ username }}/partido/{{ partido.id }}/editar" class="btn btn-edit btn-sm">
+                                   <i class="fas fa-edit"></i> <span>Editar</span>
+                               </a>
+                               <button type="button" class="btn btn-delete btn-sm" onclick="confirmDelete('/{{ username }}/partido/{{ partido.id }}/eliminar', null, '{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}')">
+                                   <i class="fas fa-trash"></i> <span>Eliminar</span>
+                               </button>
+                           </div>
+                       </td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+       {% else %}
+       <div class="empty-state">
+           <i class="fas fa-futbol"></i>
+           <h3>No hay partidos</h3>
+           <p>Comienza creando tu primer partido</p>
+           {% if temporadas %}
+           <a href="/{{ username }}/temporada/{{ temporadas[0].id }}/partido/nuevo" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Nuevo Partido
+           </a>
+           {% else %}
+           <a href="/{{ username }}/temporada/nueva" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Crear Temporada Primero
+           </a>
+           {% endif %}
+       </div>
+       {% endif %}
+   </div>
+</div>
+{% endblock %}

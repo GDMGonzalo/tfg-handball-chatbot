@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MIKEL{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/dropdowns.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/modals.css') }}">
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/components/buttons.css">
+    <link rel="stylesheet" href="/static/css/components/forms.css">
+    <link rel="stylesheet" href="/static/css/components/dropdowns.css">
+    <link rel="stylesheet" href="/static/css/components/features.css">
+    <link rel="stylesheet" href="/static/css/components/video-thumbnails.css">
+    <link rel="stylesheet" href="/static/css/components/player-cards.css">
+    <link rel="stylesheet" href="/static/css/components/event-annotation.css">
+    <link rel="stylesheet" href="/static/css/components/timeline-eventos.css">
+    <script src="/static/js/popup.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>MIKEL</h3>
+                <button class="btn toggle-sidebar-btn" id="toggle-sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                {% if session.get('user_id') %}
+                <div class="user-info">
+                    <i class="fas fa-user-circle"></i>
+                    <span>{{ session.username }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <ul class="sidebar-menu">
+                {% if session.get('user_id') %}
+                <li class="{% if request.path.endswith('/dashboard') %}active{% endif %}">
+                    <a href="/{{ session.username }}/dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="{% if '/temporada' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/temporadas">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Temporadas</span>
+                    </a>
+                </li>
+                <li class="{% if '/equipo' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/equipos">
+                        <i class="fas fa-users"></i>
+                        <span>Equipos</span>
+                    </a>
+                </li>
+                <li class="{% if '/liga' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/ligas">
+                        <i class="fas fa-trophy"></i>
+                        <span>Ligas</span>
+                    </a>
+                </li>
+                <li class="{% if '/partido' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/partidos">
+                        <i class="fas fa-futbol"></i>
+                        <span>Partidos</span>
+                    </a>
+                </li>
+                <li class="{% if '/video' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/videos">
+                        <i class="fas fa-video"></i>
+                        <span>Videos</span>
+                    </a>
+                </li>
+                <li class="{% if '/eventos-personalizados' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/eventos-personalizados">
+                        <i class="fas fa-cogs"></i>
+                        <span>Eventos Personalizados</span>
+                    </a>
+                </li>
+
+                <li class="{% if '/chatbot' in request.path %}active{% endif %}">
+                    <a href="/{{ session.username }}/chatbot">
+                        <i class="fas fa-comments"></i>
+                        <span>Chatbot</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="/logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="{% if request.path == '/login' %}active{% endif %}">
+                    <a href="/login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Iniciar Sesión</span>
+                    </a>
+                </li>
+                <li class="{% if request.path == '/register' %}active{% endif %}">
+                    <a href="/register">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Registrarse</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <!-- Barra de búsqueda eliminada -->
+                <div class="user-actions">
+                    {% if session.get('user_id') %}
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-circle"></i>
+                            <span>{{ session.username }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="/{{ session.username }}/perfil">
+                                <i class="fas fa-user"></i> Perfil
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/logout">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="content-wrapper">
+                <!-- Sistema centralizado de mensajes flash -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages-container">
+                            {% for category, message in messages %}
+                                {% set alert_class = "alert-info" %}
+                                {% set icon_class = "fa-info-circle" %}
+                                
+                                {% if category == "success" %}
+                                    {% set alert_class = "alert-success" %}
+                                    {% set icon_class = "fa-check-circle" %}
+                                {% elif category == "error" %}
+                                    {% set alert_class = "alert-danger" %}
+                                    {% set icon_class = "fa-exclamation-circle" %}
+                                {% elif category == "warning" %}
+                                    {% set alert_class = "alert-warning" %}
+                                    {% set icon_class = "fa-exclamation-triangle" %}
+                                {% endif %}
+                                
+                                <div class="alert {{ alert_class }} alert-dismissible fade show" role="alert">
+                                    <i class="fas {{ icon_class }} mr-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminaciones -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">¿Estás seguro?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="warning-icon mb-3">
+                        <i class="fas fa-exclamation-circle fa-4x text-warning"></i>
+                    </div>
+                    <p id="confirmDeleteMessage">¡No podrás revertir esta acción!</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <form id="confirmDeleteForm" method="POST">
+                        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Toggle sidebar
+        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('expanded');
+        });
+
+        // Auto-hide flash messages after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').fadeOut('slow', function() {
+                    $(this).remove();
+                });
+            }, 5000);
+        });
+
+        // Función global para mostrar el modal de confirmación de eliminación
+        function confirmDelete(formAction, message, itemName) {
+            const modal = $('#confirmDeleteModal');
+            const form = $('#confirmDeleteForm');
+            const messageElement = $('#confirmDeleteMessage');
+            
+            // Configurar el formulario y el mensaje
+            form.attr('action', formAction);
+            
+            // Personalizar el mensaje si se proporciona
+            if (message) {
+                messageElement.html(message);
+            } else {
+                messageElement.html(`¿Estás seguro de que quieres eliminar <strong>${itemName}</strong>?<br>¡No podrás revertir esta acción!`);
+            }
+            
+            // Mostrar el modal
+            modal.modal('show');
+            
+            return false; // Prevenir el envío del formulario original
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+    <script src="/static/js/add-page-class.js"></script>
+</body>
+</html>

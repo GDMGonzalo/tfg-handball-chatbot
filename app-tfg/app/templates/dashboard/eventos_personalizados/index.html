@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Eventos Personalizados - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Eventos Personalizados</h1>
+        <p>Gestiona tus eventos personalizados para análisis de balonmano</p>
+    </div>
+    <div class="module-actions">
+        <a href="{{ url_for('evento_personalizado_routes.crear_evento_personalizado', username=username) }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Evento
+        </a>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-cogs"></i> Mis Eventos Personalizados</h3>
+    </div>
+    <div class="section-body">
+        {% if eventos_personalizados %}
+            <div class="row">
+                {% for evento in eventos_personalizados %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ evento.nombre }}</h5>
+                            <span class="badge {% if evento.es_equipo %}bg-info{% elif evento.es_global %}bg-warning{% else %}bg-success{% endif %}">
+                                {% if evento.es_equipo %}Equipo{% elif evento.es_global %}Global{% else %}Jugador{% endif %}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>Categoría:</strong> {{ evento.categoria_evento.nombre }}
+                            </p>
+                            {% if evento.estadistica_tipo %}
+                            <p class="card-text">
+                                <strong>Estadística:</strong> 
+                                <span class="badge 
+                                    {% if evento.estadistica_tipo == 'gol' %}bg-success
+                                    {% elif evento.estadistica_tipo == 'falta' %}bg-warning
+                                    {% elif evento.estadistica_tipo == 'perdida' %}bg-danger
+                                    {% elif evento.estadistica_tipo == 'recuperacion' %}bg-info
+                                    {% endif %}">
+                                    {{ evento.estadistica_tipo|title }}
+                                </span>
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                            <a href="{{ url_for('evento_personalizado_routes.editar_evento_personalizado', username=username, evento_id=evento.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <form method="POST" action="{{ url_for('evento_personalizado_routes.eliminar_evento_personalizado', username=username, evento_id=evento.id) }}" 
+                                  onsubmit="return confirm('¿Estás seguro de que quieres eliminar este evento personalizado?')">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-cogs"></i>
+                <h3>No tienes eventos personalizados</h3>
+                <p>Crea eventos personalizados para adaptarlos a tu análisis de balonmano</p>
+                <a href="{{ url_for('evento_personalizado_routes.crear_evento_personalizado', username=username) }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Primer Evento
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sección de información adaptada al balonmano -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-lightbulb"></i> Guía de Eventos Personalizados</h3>
+    </div>
+    <div class="section-body">
+        <!-- Introducción principal -->
+        <div class="info-hero mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h4 class="text-primary mb-3">
+                        <i class="fas fa-magic"></i> Personaliza tu análisis de balonmano
+                    </h4>
+                    <p class="lead mb-0">
+                        Crea eventos específicos adaptados al balonmano y tu metodología de análisis. 
+                        Cada evento se clasifica automáticamente según su categoría para optimizar tu flujo de trabajo.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="info-icon-large">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tipos de eventos con cards adaptados al balonmano -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="info-card info-card-success">
+                    <div class="info-card-header">
+                        <i class="fas fa-user"></i>
+                        <h5>Eventos de Jugador</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <p>Se asignan a jugadores específicos en el campo</p>
+                        <div class="info-examples">
+                            <span class="example-tag">Gol en salto</span>
+                            <span class="example-tag">Asistencia de gol</span>
+                            <span class="example-tag">Parada de portero</span>
+                            <span class="example-tag">Exclusión 2min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card info-card-info">
+                    <div class="info-card-header">
+                        <i class="fas fa-users"></i>
+                        <h5>Eventos de Equipo</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <p>Se asignan al equipo completo como unidad táctica</p>
+                        <div class="info-examples">
+                            <span class="example-tag">Defensa 6-0</span>
+                            <span class="example-tag">Ataque posicional</span>
+                            <span class="example-tag">Contraataque</span>
+                            <span class="example-tag">Superioridad numérica</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card info-card-warning">
+                    <div class="info-card-header">
+                        <i class="fas fa-globe"></i>
+                        <h5>Eventos Globales</h5>
+                    </div>
+                    <div class="info-card-body">
+                        <p>Afectan al partido en general, interrupciones o situaciones especiales</p>
+                        <div class="info-examples">
+                            <span class="example-tag">Parada táctica</span>
+                            <span class="example-tag">Partido suspendido</span>
+                            <span class="example-tag">Incidente en grada</span>
+                            <span class="example-tag">Problema técnico</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Proceso paso a paso -->
+        <div class="process-steps">
+            <h5 class="mb-4">
+                <i class="fas fa-route"></i> ¿Cómo funciona?
+            </h5>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h6>Crear Evento</h6>
+                            <p>Define el nombre y selecciona una categoría</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h6>Clasificación Automática</h6>
+                            <p>El sistema asigna el tipo según la categoría</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h6>Configurar Video</h6>
+                            <p>Selecciona qué eventos usar en cada análisis</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h6>Anotar</h6>
+                            <p>Usa tus eventos personalizados durante el análisis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips y consejos adaptados al balonmano -->
+        <div class="tips-section mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="tip-box tip-success">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h6>Consejos para eventos de balonmano</h6>
+                            <ul class="mb-0">
+                                <li>Diferencia entre tipos de gol (salto, penalty, etc.)</li>
+                                <li>Especifica sistemas defensivos (6-0, 5-1, 3-2-1)</li>
+                                <li>Incluye situaciones especiales (superioridad, inferioridad)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tip-box tip-info">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <h6>Optimiza tu análisis táctico</h6>
+                            <ul class="mb-0">
+                                <li>Crea eventos para fases de ataque y defensa</li>
+                                <li>Registra cambios de sistema durante el partido</li>
+                                <li>Analiza eficacia en situaciones especiales</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para la sección de información mejorada */
+.info-hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-icon-large {
+    font-size: 4rem;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+.info-card {
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.info-card-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-left: 4px solid #28a745;
+}
+
+.info-card-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-left: 4px solid #17a2b8;
+}
+
+.info-card-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-left: 4px solid #ffc107;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.info-card-header i {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.info-card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.info-examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.example-tag {
+    background: rgba(255,255,255,0.8);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.process-steps {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+.step-card {
+    text-align: center;
+    padding: 1rem;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 0 auto 1rem;
+}
+
+.step-content h6 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.step-content p {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.tip-box {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.tip-success {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+}
+
+.tip-info {
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+}
+
+.tip-box i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    margin-top: 0.25rem;
+}
+
+.tip-box h6 {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.tip-box ul {
+    font-size: 0.9rem;
+    padding-left: 1.25rem;
+}
+
+.tip-box li {
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

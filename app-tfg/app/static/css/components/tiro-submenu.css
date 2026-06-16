@@ -1,0 +1,122 @@
+/* Estilos para los submenús de eventos de tiro */
+.tiro-submenu-container {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.tiro-submenu-section {
+  margin-bottom: 15px;
+}
+
+.tiro-submenu-section:last-child {
+  margin-bottom: 0;
+}
+
+.tiro-submenu-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #495057;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.tiro-submenu-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tiro-option-btn {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  background-color: white;
+  color: #495057;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  text-align: center;
+}
+
+.tiro-option-btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.tiro-option-btn.selected {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.tiro-option-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tiro-register-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background-color 0.2s ease;
+}
+
+.tiro-register-btn:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.tiro-register-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.tiro-selection-status {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #0c5460;
+}
+
+.tiro-selection-status.complete {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+/* Animación para mostrar/ocultar el submenú */
+.tiro-submenu-container {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.tiro-submenu-container.active {
+  opacity: 1;
+  max-height: 300px;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .tiro-submenu-options {
+    flex-direction: column;
+  }
+
+  .tiro-option-btn {
+    width: 100%;
+    min-width: auto;
+  }
+}

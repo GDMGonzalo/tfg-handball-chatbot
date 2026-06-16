@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}Registro - MIKEL{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Crear Cuenta</h2>
+            <p>Únete a MIKEL y comienza a gestionar tus equipos</p>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="{{ url_for('user_routes.register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    <span>Nombre de usuario</span>
+                </label>
+                <input type="text" id="username" name="username" required autocomplete="username" placeholder="Elige un nombre de usuario">
+            </div>
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>
+                    <span>Contraseña</span>
+                </label>
+                <input type="password" id="password" name="password" required autocomplete="new-password" placeholder="Crea una contraseña segura">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">
+                    <i class="fas fa-lock"></i>
+                    <span>Confirmar contraseña</span>
+                </label>
+                <input type="password" id="confirm_password" name="confirm_password" required autocomplete="new-password" placeholder="Confirma tu contraseña">
+            </div>
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-user-plus"></i> Crear Cuenta
+                </button>
+            </div>
+        </form>
+        <div class="auth-footer">
+            <p>¿Ya tienes una cuenta? <a href="{{ url_for('user_routes.login') }}">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}

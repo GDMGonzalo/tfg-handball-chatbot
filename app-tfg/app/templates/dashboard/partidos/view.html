@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Partido - {{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</h1>
+        <p>{{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+    <div>
+        <a href="/{{ username }}/partido/{{ partido.id }}/editar" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Editar
+        </a>
+        <button type="button" class="btn btn-danger" onclick="confirmarEliminar('{{ partido.id }}', '{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}')">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- Información del partido -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <div class="partido-info">
+            <div class="partido-header">
+                <div class="equipo-local">
+                    <h4><a href="/{{ username }}/equipo/{{ partido.equipo_local.id }}">{{ partido.equipo_local.nombre }}</a></h4>
+                </div>
+                <div class="resultado-container">
+                    <!-- Mostrar resultado calculado -->
+                    {% if resultado_calculado %}
+                    <div class="resultado">{{ resultado_calculado[0] }} - {{ resultado_calculado[1] }}</div>
+                    <div class="resultado-info">
+                        <span class="badge badge-info">Resultado calculado automáticamente de los eventos de gol</span>
+                    </div>
+                    {% else %}
+                    <div class="resultado">0 - 0</div>
+                    <div class="resultado-info">
+                        <span class="badge badge-secondary">No hay eventos de gol registrados</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="equipo-visitante">
+                    <h4><a href="/{{ username }}/equipo/{{ partido.equipo_visitante.id }}">{{ partido.equipo_visitante.nombre }}</a></h4>
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-calendar-alt"></i> Fecha:</span>
+                    <span class="info-value">{{ partido.fecha_hora.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-clock"></i> Hora:</span>
+                    <span class="info-value">{{ partido.fecha_hora.strftime('%H:%M') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-trophy"></i> Liga:</span>
+                    <span class="info-value">
+                        {% if partido.liga %}
+                            <a href="/{{ username }}/liga/{{ partido.liga.id }}">{{ partido.liga.nombre }}</a>
+                        {% else %}
+                            Sin liga
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label"><i class="fas fa-calendar-week"></i> Temporada:</span>
+                    <span class="info-value">
+                        <a href="/{{ username }}/temporada/{{ temporada.id }}">{{ temporada.nombre }}</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nueva sección: Timeline de eventos -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-list-alt"></i> Timeline de eventos</h3>
+        <div class="section-actions">
+            <a href="/{{ username }}/partido/{{ partido.id }}/exportar-csv" class="btn btn-sm btn-success">
+                <i class="fas fa-file-csv"></i> Exportar a CSV
+            </a>
+        </div>
+        <div class="section-actions">
+            <a href="/{{ username }}/partido/{{ partido.id }}/estadisticas-csv" class="btn btn-sm btn-success">
+                <i class="fas fa-file-csv"></i> Exportar estadisticas
+            </a>
+        </div>
+    </div>
+    <div class="section-body">
+        <div class="eventos-filtro">
+            <label for="filtro-tipo-evento">Filtrar por:</label>
+            <select id="filtro-tipo-evento" class="form-control form-control-sm">
+                <option value="todos">Todos los eventos</option>
+                <option value="goles">Goles</option>
+                <option value="paradas">Paradas</option>
+                <option value="exclusiones">Exclusiones</option>
+                <option value="tiempos">Tiempos muertos</option>
+                <option value="periodos">Periodos</option>
+            </select>
+            
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-mostrar-todos">Todos</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-mostrar-local">{{ partido.equipo_local.nombre }}</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-mostrar-visitante">{{ partido.equipo_visitante.nombre }}</button>
+            </div>
+        </div>
+        
+        <div id="eventos-container">
+            <table class="eventos-timeline" id="eventos-timeline">
+                <thead>
+                    <tr>
+                        <th class="equipo-local">{{ partido.equipo_local.nombre }}</th>
+                        <th class="tiempo">TIEMPO</th>
+                        <th class="equipo-visitante">{{ partido.equipo_visitante.nombre }}</th>
+                    </tr>
+                </thead>
+                <tbody id="eventos-tbody">
+                    <!-- Los eventos se cargarán dinámicamente con JavaScript -->
+                    <tr>
+                        <td colspan="3" class="empty-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <h3>Cargando eventos...</h3>
+                            <p>Por favor, espere mientras se cargan los eventos del partido.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Resto del contenido igual que antes -->
+<!-- Convocatoria -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-users"></i> Convocatoria</h3>
+        <a href="/{{ username }}/partido/{{ partido.id }}/convocatoria" class="btn btn-primary">
+            <i class="fas fa-user-edit"></i> Gestionar Convocatoria
+        </a>
+    </div>
+    <div class="section-body">
+        <div class="row">
+            <!-- Equipo Local -->
+            <div class="col-md-6">
+                <div class="convocatoria-card">
+                    <h4 class="convocatoria-title">
+                        <i class="fas fa-home"></i> {{ partido.equipo_local.nombre }} (Local)
+                    </h4>
+                    {% if convocados_local %}
+                    <ul class="jugadores-list">
+                        {% for convocado in convocados_local %}
+                        <li class="{% if convocado.jugador.rol == 'entrenador' %}entrenador{% endif %}{% if convocado.jugador.es_capitan %} capitan{% endif %}">
+                            {% if convocado.jugador.dorsal %}#{{ convocado.jugador.dorsal }} - {% endif %}
+                            {{ convocado.jugador.nombre }} {{ convocado.jugador.apellido }}
+                            {% if convocado.jugador.rol == 'entrenador' %} <span class="badge badge-success">Entrenador</span>{% endif %}
+                            {% if convocado.jugador.es_capitan %} <span class="badge badge-warning">Capitán</span>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No hay jugadores convocados.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Equipo Visitante -->
+            <div class="col-md-6">
+                <div class="convocatoria-card">
+                    <h4 class="convocatoria-title">
+                        <i class="fas fa-plane"></i> {{ partido.equipo_visitante.nombre }} (Visitante)
+                    </h4>
+                    {% if convocados_visitante %}
+                    <ul class="jugadores-list">
+                        {% for convocado in convocados_visitante %}
+                        <li class="{% if convocado.jugador.rol == 'entrenador' %}entrenador{% endif %}{% if convocado.jugador.es_capitan %} capitan{% endif %}">
+                            {% if convocado.jugador.dorsal %}#{{ convocado.jugador.dorsal }} - {% endif %}
+                            {{ convocado.jugador.nombre }} {{ convocado.jugador.apellido }}
+                            {% if convocado.jugador.rol == 'entrenador' %} <span class="badge badge-success">Entrenador</span>{% endif %}
+                            {% if convocado.jugador.es_capitan %} <span class="badge badge-warning">Capitán</span>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">No hay jugadores convocados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Videos -->
+<div class="dashboard-section">
+  <div class="section-header">
+      <h3 class="section-title"><i class="fas fa-video"></i> Videos</h3>
+  </div>
+  <div class="section-body">
+      {% if videos %}
+      <div class="videos-grid">
+          {% for video in videos %}
+          <div class="video-card">
+              <a href="/{{ username }}/video/{{ video.id }}">
+                  {% set liga_path = "liga_" + partido.liga.id|string if partido.liga else "sin_liga" %}
+                  <img src="/uploads/{{ username }}/temporada_{{ temporada.id }}/{{ liga_path }}/partido_{{ partido.id }}/{{ video.filename|replace('.mp4', '_thumb.jpg') }}" 
+                       alt="Miniatura de {{ video.filename }}">
+              </a>
+              <div class="video-info">
+                  <h4>{{ video.filename }}</h4>
+                  <p><i class="fas fa-clock"></i> {{ video.duracion_segundos // 60 }}:{{ '%02d' % (video.duracion_segundos % 60) }}</p>
+                  <p><i class="fas fa-calendar-day"></i> {{ video.uploaded_at.strftime('%d/%m/%Y') }}</p>
+              </div>
+          </div>
+          {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+          <i class="fas fa-video"></i>
+          <h3>No hay videos</h3>
+          <p>Sube videos para analizar este partido</p>
+      </div>
+      {% endif %}
+      
+      <!-- Formulario para subir video -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5><i class="fas fa-video"></i> Subir Video</h5>
+    </div>
+    <div class="card-body">
+        <div class="form-group">
+            <label for="chunked-video"><i class="fas fa-file-video"></i> Seleccionar video:</label>
+            <input type="file" class="form-control-file" id="chunked-video" accept=".mp4">
+            <small class="form-text text-muted">Solo se permiten archivos .mp4</small>
+        </div>
+        
+        <div class="progress mb-3" style="display: none;" id="upload-progress-container">
+            <div id="upload-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+        </div>
+        
+        <div id="upload-status" class="mb-3"></div>
+        
+        <button type="button" id="start-chunked-upload" class="btn btn-primary"><i class="fas fa-upload"></i> Subir Video</button>
+        <button type="button" id="cancel-chunked-upload" class="btn btn-danger" style="display: none;"><i class="fas fa-times"></i> Cancelar</button>
+    </div>
+</div>
+  </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el partido <strong id="partido-nombre"></strong>?</p>
+                <p class="text-danger">Esta acción eliminará también todos los videos y eventos asociados a este partido.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="form-eliminar" method="POST">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Añadir metadatos para JavaScript -->
+<meta name="partido-id" content="{{ partido.id }}">
+<meta name="username" content="{{ username }}">
+<meta name="equipo-local-id" content="{{ partido.equipo_local_id }}">
+<meta name="equipo-visitante-id" content="{{ partido.equipo_visitante_id }}">
+
+<script src="/static/js/chunked-upload.js"></script>
+<script src="/static/js/timeline-eventos.js"></script>
+<script>
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('partido-nombre').textContent = nombre;
+        document.getElementById('form-eliminar').action = '/{{ username }}/partido/' + id + '/eliminar';
+        $('#eliminarModal').modal('show');
+    }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos DOM
+    const chunkedFileInput = document.getElementById('chunked-video');
+    const startUploadBtn = document.getElementById('start-chunked-upload');
+    const cancelUploadBtn = document.getElementById('cancel-chunked-upload');
+    const progressContainer = document.getElementById('upload-progress-container');
+    const progressBar = document.getElementById('upload-progress-bar');
+    const statusDiv = document.getElementById('upload-status');
+    
+    let uploader = null;
+    
+    // Iniciar subida por fragmentos
+    startUploadBtn.addEventListener('click', function() {
+        const file = chunkedFileInput.files[0];
+        
+        if (!file) {
+            showStatus('error', 'Por favor, selecciona un archivo de video.');
+            return;
+        }
+        
+        // Verificar formato (solo .mp4)
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        
+        if (fileExt !== 'mp4') {
+            showStatus('error', 'Solo se permiten archivos .mp4');
+            return;
+        }
+        
+        // Configurar el uploader
+        uploader = new ChunkedUploader({
+            file: file,
+            endpoint: '/{{ username }}/partido/{{ partido.id }}/upload/chunked',
+            metadata: {
+                partido_id: '{{ partido.id }}'
+            },
+            onProgress: function(data) {
+                // Actualizar barra de progreso
+                const percent = data.progress.toFixed(2);
+                progressBar.style.width = percent + '%';
+                progressBar.setAttribute('aria-valuenow', percent);
+                progressBar.textContent = percent + '%';
+                
+                // Mostrar información de progreso
+                showStatus('info', `Subiendo fragmento ${data.uploadedChunks} de ${data.totalChunks} (${percent}%)`);
+            },
+            onComplete: function(data) {
+                // Mostrar mensaje de éxito
+                showStatus('success', `¡Video "${data.filename}" subido con éxito!`);
+                progressBar.classList.remove('progress-bar-animated');
+                
+                // Resetear controles
+                chunkedFileInput.value = '';
+                cancelUploadBtn.style.display = 'none';
+                startUploadBtn.style.display = 'inline-block';
+                
+                // Recargar la página después de 2 segundos
+                setTimeout(function() {
+                    window.location.reload();
+                }, 2000);
+            },
+            onError: function(message) {
+                showStatus('error', message);
+                cancelUploadBtn.style.display = 'none';
+                startUploadBtn.style.display = 'inline-block';
+            }
+        });
+        
+        // Mostrar barra de progreso y botón de cancelar
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+        
+        startUploadBtn.style.display = 'none';
+        cancelUploadBtn.style.display = 'inline-block';
+        
+        // Iniciar la subida
+        uploader.start();
+        showStatus('info', 'Iniciando subida...');
+    });
+    
+    // Cancelar subida
+    cancelUploadBtn.addEventListener('click', function() {
+        if (uploader) {
+            uploader.abort();
+            showStatus('warning', 'Subida cancelada por el usuario.');
+            
+            // Resetear controles
+            progressContainer.style.display = 'none';
+            cancelUploadBtn.style.display = 'none';
+            startUploadBtn.style.display = 'inline-block';
+        }
+    });
+    
+    // Función para mostrar mensajes de estado
+    function showStatus(type, message) {
+        const alertClass = {
+            'info': 'alert-info',
+            'success': 'alert-success',
+            'warning': 'alert-warning',
+            'error': 'alert-danger'
+        }[type] || 'alert-info';
+        
+        statusDiv.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+    }
+});
+</script>
+{% endblock %}

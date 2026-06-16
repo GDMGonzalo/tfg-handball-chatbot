@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Partido - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Nuevo Partido</h1>
+        <p>Crea un nuevo partido deportivo</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-futbol"></i> Datos del Partido</h3>
+    </div>
+    <div class="section-body">
+        <div class="form-container">
+            <form action="{{ url_for('partido_routes.nuevo_partido', username=username, temporada_id=temporada.id) }}" method="POST">
+                <div class="form-group">
+                    <label for="fecha_hora"><i class="fas fa-calendar-alt"></i> Fecha y Hora:</label>
+                    <input type="datetime-local" id="fecha_hora" name="fecha_hora" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="liga_id"><i class="fas fa-trophy"></i> Liga:</label>
+                    <select id="liga_id" name="liga_id" class="form-control">
+                        <option value="">Sin liga</option>
+                        {% for liga in ligas %}
+                        <option value="{{ liga.id }}" {% if request.args.get('liga_id') == liga.id|string %}selected{% endif %}>{{ liga.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="equipo_local_id"><i class="fas fa-home"></i> Equipo Local:</label>
+                    <select id="equipo_local_id" name="equipo_local_id" class="form-control" required>
+                        <option value="">Selecciona un equipo</option>
+                        {% for equipo in equipos %}
+                        <option value="{{ equipo.id }}">{{ equipo.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="equipo_visitante_id"><i class="fas fa-plane"></i> Equipo Visitante:</label>
+                    <select id="equipo_visitante_id" name="equipo_visitante_id" class="form-control" required>
+                        <option value="">Selecciona un equipo</option>
+                        {% for equipo in equipos %}
+                        <option value="{{ equipo.id }}">{{ equipo.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Partido
+                    </button>
+                    <a href="{{ url_for('temporada_routes.ver_temporada', username=username, temporada_id=temporada.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <div class="info-box">
+            <p>Después de crear un partido, podrás:</p>
+            <ul>
+                <li>Gestionar la convocatoria de jugadores</li>
+                <li>Registrar el resultado</li>
+                <li>Subir videos del partido</li>
+                <li>Analizar eventos y estadísticas</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Evitar que se seleccione el mismo equipo como local y visitante
+        const equipoLocalSelect = document.getElementById('equipo_local_id');
+        const equipoVisitanteSelect = document.getElementById('equipo_visitante_id');
+        
+        equipoLocalSelect.addEventListener('change', function() {
+            const localId = this.value;
+            
+            // Habilitar todas las opciones del visitante
+            Array.from(equipoVisitanteSelect.options).forEach(option => {
+                option.disabled = false;
+            });
+            
+            // Deshabilitar la opción del equipo local en el selector de visitante
+            if (localId) {
+                const visitanteOption = equipoVisitanteSelect.querySelector(`option[value="${localId}"]`);
+                if (visitanteOption) {
+                    visitanteOption.disabled = true;
+                }
+                
+                // Si el equipo visitante ya tenía seleccionado el mismo equipo, resetear
+                if (equipoVisitanteSelect.value === localId) {
+                    equipoVisitanteSelect.value = '';
+                }
+            }
+        });
+        
+        equipoVisitanteSelect.addEventListener('change', function() {
+            const visitanteId = this.value;
+            
+            // Habilitar todas las opciones del local
+            Array.from(equipoLocalSelect.options).forEach(option => {
+                option.disabled = false;
+            });
+            
+            // Deshabilitar la opción del equipo visitante en el selector de local
+            if (visitanteId) {
+                const localOption = equipoLocalSelect.querySelector(`option[value="${visitanteId}"]`);
+                if (localOption) {
+                    localOption.disabled = true;
+                }
+                
+                // Si el equipo local ya tenía seleccionado el mismo equipo, resetear
+                if (equipoLocalSelect.value === visitanteId) {
+                    equipoLocalSelect.value = '';
+                }
+            }
+        });
+        
+        // Inicializar el estado
+        if (equipoLocalSelect.value) {
+            const event = new Event('change');
+            equipoLocalSelect.dispatchEvent(event);
+        }
+        
+        if (equipoVisitanteSelect.value) {
+            const event = new Event('change');
+            equipoVisitanteSelect.dispatchEvent(event);
+        }
+    });
+</script>
+{% endblock %}

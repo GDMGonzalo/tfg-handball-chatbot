@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestionar Convocatoria{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/gestionar_convocatoria.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">Gestionar Convocatoria</h1>
+    <h3 class="text-center">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</h3>
+    <p class="text-center">{{ partido.fecha_hora.strftime('%d/%m/%Y %H:%M') }}</p>
+    
+    
+    <div class="row">
+        <!-- Equipo Local -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>{{ partido.equipo_local.nombre }} (Local)</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('partido_routes.guardar_convocatoria', username=username, partido_id=partido.id) }}" method="POST">
+                        <input type="hidden" name="equipo_id" value="{{ partido.equipo_local.id }}">
+                        
+                        {% if jugadores_local %}
+                        <div class="form-group">
+                            <div class="jugadores-list">
+                                {% for jugador in jugadores_local %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="jugadores_ids" value="{{ jugador.id }}" id="jugador-local-{{ jugador.id }}" 
+                                        {% if jugador.id in convocados_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="jugador-local-{{ jugador.id }}">
+                                        {% if jugador.dorsal %}#{{ jugador.dorsal }} - {% endif %}
+                                        {{ jugador.nombre }} {{ jugador.apellido }}
+                                        {% if jugador.rol == 'entrenador' %} <span class="badge badge-success">Entrenador</span>{% endif %}
+                                        {% if jugador.es_capitan %} <span class="badge badge-warning">Cap</span>{% endif %}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">Guardar Convocatoria</button>
+                        {% else %}
+                        <p>No hay jugadores en este equipo.</p>
+                        <a href="/{{ username }}/equipo/{{ partido.equipo_local.id }}" class="btn btn-secondary">Gestionar Equipo</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Equipo Visitante -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>{{ partido.equipo_visitante.nombre }} (Visitante)</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('partido_routes.guardar_convocatoria', username=username, partido_id=partido.id) }}" method="POST">
+                        <input type="hidden" name="equipo_id" value="{{ partido.equipo_visitante.id }}">
+                        
+                        {% if jugadores_visitante %}
+                        <div class="form-group">
+                            <div class="jugadores-list">
+                                {% for jugador in jugadores_visitante %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="jugadores_ids" value="{{ jugador.id }}" id="jugador-visitante-{{ jugador.id }}" 
+                                        {% if jugador.id in convocados_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="jugador-visitante-{{ jugador.id }}">
+                                        {% if jugador.dorsal %}#{{ jugador.dorsal }} - {% endif %}
+                                        {{ jugador.nombre }} {{ jugador.apellido }}
+                                        {% if jugador.rol == 'entrenador' %} <span class="badge badge-success">Entrenador</span>{% endif %}
+                                        {% if jugador.es_capitan %} <span class="badge badge-warning">Cap</span>{% endif %}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block btn-submit">Guardar Convocatoria</button>
+                        {% else %}
+                        <p>No hay jugadores en este equipo.</p>
+                        <a href="/{{ username }}/equipo/{{ partido.equipo_visitante.id }}" class="btn btn-secondary">Gestionar Equipo</a>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('partido_routes.ver_partido', username=username, partido_id=partido.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver al Partido
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Temporadas - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+   <div>
+       <h1>Temporadas</h1>
+       <p>Gestiona tus temporadas deportivas</p>
+   </div>
+   <div>
+       <a href="/{{ username }}/temporada/nueva" class="btn btn-primary">
+           <i class="fas fa-plus"></i> Nueva Temporada
+       </a>
+   </div>
+</div>
+
+<div class="dashboard-section">
+   <div class="section-header">
+       <h3 class="section-title"><i class="fas fa-calendar-alt"></i> Mis Temporadas</h3>
+   </div>
+   <div class="section-body">
+       {% if temporadas %}
+       <div class="table-responsive">
+           <table class="table">
+               <thead>
+                   <tr>
+                       <th>Nombre</th>
+                       <th>Descripción</th>
+                       <th>Ligas</th>
+                       <th>Partidos</th>
+                       <th>Videos</th>
+                       <th>Acciones</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for temporada in temporadas %}
+                   <tr>
+                       <td>{{ temporada.nombre }}</td>
+                       <td>{{ temporada.descripcion|truncate(50) }}</td>
+                       <td>{{ temporada.ligas|length }}</td>
+                       <td>{{ temporada.partidos|length }}</td>
+                       <td>{{ videos_por_temporada[temporada.id]|default(0) }}</td>
+                       <td data-label="Acciones" class="actions">
+                           <div class="btn-group">
+                               <a href="/{{ username }}/temporada/{{ temporada.id }}" class="btn btn-view btn-sm">
+                                   <i class="fas fa-eye"></i> <span>Ver</span>
+                               </a>
+                               <a href="/{{ username }}/temporada/{{ temporada.id }}/editar" class="btn btn-edit btn-sm">
+                                   <i class="fas fa-edit"></i> <span>Editar</span>
+                               </a>
+                               <button type="button" class="btn btn-delete btn-sm" onclick="confirmarEliminar('{{ temporada.id }}', '{{ temporada.nombre }}')">
+                                   <i class="fas fa-trash"></i> <span>Eliminar</span>
+                               </button>
+                           </div>
+                       </td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+       {% else %}
+       <div class="empty-state">
+           <i class="fas fa-calendar-times"></i>
+           <h3>No hay temporadas</h3>
+           <p>Comienza creando tu primera temporada</p>
+           <a href="/{{ username }}/temporada/nueva" class="btn btn-primary">
+               <i class="fas fa-plus"></i> Nueva Temporada
+           </a>
+       </div>
+       {% endif %}
+   </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                   <span aria-hidden="true">&times;</span>
+               </button>
+           </div>
+           <div class="modal-body">
+               <p>¿Estás seguro de que quieres eliminar la temporada <strong id="temporada-nombre"></strong>?</p>
+               <p class="text-danger">Esta acción eliminará también todas las ligas, partidos y videos asociados a esta temporada.</p>
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+               <form id="form-eliminar" method="POST">
+                   <button type="submit" class="btn btn-danger">Eliminar</button>
+               </form>
+           </div>
+       </div>
+   </div>
+</div>
+
+<script>
+   function confirmarEliminar(id, nombre) {
+       document.getElementById('temporada-nombre').textContent = nombre;
+       document.getElementById('form-eliminar').action = '/{{ username }}/temporada/' + id + '/eliminar';
+       $('#eliminarModal').modal('show');
+   }
+</script>
+{% endblock %}

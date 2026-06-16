@@ -1,0 +1,141 @@
+/* Estilos específicos para las tarjetas de jugadores */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+.player-card {
+  background-color: white;
+  border-radius: 4px;
+  padding: 2px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-size: 0.7rem;
+  height: 45px;
+  width: 50px;
+  max-height: 45px;
+  max-width: 50px;
+  min-height: 45px;
+  min-width: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Estados de las tarjetas de jugadores */
+.player-card.in-pista {
+  border-left: 2px solid #007bff;
+}
+
+.player-card.in-banquillo {
+  opacity: 0.8;
+}
+
+.player-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.player-card.selected {
+  border: 2px solid #007bff;
+  background-color: #e6f2ff;
+}
+
+/* Tipos específicos de tarjetas */
+.coach-card {
+  background-color: #e8f4ea;
+  border-left: 2px solid #28a745;
+  color: #28a745;
+}
+
+/* Estilo para los porteros */
+.goalkeeper-card {
+  background-color: #fff9e6;
+  border-left: 2px solid #ffc107;
+  color: #0486b9;
+}
+
+/* Elementos internos de las tarjetas */
+.dorsal {
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1;
+}
+
+.nombre {
+  font-size: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  padding: 0;
+  line-height: 1.1;
+}
+
+.sustitucion-btn {
+  margin-top: 2px;
+  padding: 0px 2px;
+  font-size: 0.6rem;
+  height: auto;
+  line-height: 1;
+}
+
+/* Reducir el tamaño de las columnas de equipos */
+.team-column {
+  flex: 0.7;
+  min-width: 150px;
+  max-width: 200px;
+  padding: 8px;
+}
+
+.team-header h3 {
+  font-size: 1rem;
+}
+
+.team-btn {
+  padding: 3px 6px;
+  font-size: 0.7rem;
+}
+
+/* Modificaciones para la página de video */
+.video-page .players-grid {
+  grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+}
+
+.video-page .player-card {
+  height: 50px;
+  width: 55px;
+  max-height: 50px;
+  max-width: 55px;
+  min-height: 50px;
+  min-width: 55px;
+}
+
+.video-page .dorsal {
+  font-size: 0.85rem;
+}
+
+.video-page .nombre {
+  font-size: 0.65rem;
+}
+
+.sancionado-2min {
+  border: 2px solid #f44336 !important;
+  background-color: rgba(244, 67, 54, 0.6) !important; /* rojo fuerte y visible */
+  color: #fff !important;
+}
+
+.player-card.sancionado-2min {
+  border: 2px solid #f44336 !important;
+  background-color: rgba(244, 67, 54, 0.6) !important;
+  color: #fff !important;
+}

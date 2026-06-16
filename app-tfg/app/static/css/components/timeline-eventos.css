@@ -1,0 +1,304 @@
+/* Estilos para la sección de timeline de eventos tipo ASOBAL */
+.eventos-timeline {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.eventos-timeline thead th {
+  background-color: #f8f9fa;
+  padding: 12px 15px;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.eventos-timeline tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+}
+
+.eventos-timeline tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.eventos-timeline tbody tr:last-child {
+  border-bottom: none;
+}
+
+.eventos-timeline td {
+  padding: 12px 15px;
+  vertical-align: middle;
+}
+
+.eventos-timeline .equipo-local {
+  text-align: left;
+  width: 40%;
+}
+
+.eventos-timeline .tiempo {
+  text-align: center;
+  width: 20%;
+  font-weight: 600;
+}
+
+.eventos-timeline .resultado {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.eventos-timeline .equipo-visitante {
+  text-align: right;
+  width: 40%;
+}
+
+.eventos-timeline .evento-icon {
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.eventos-timeline .evento-icon-right {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.eventos-timeline .evento-jugador {
+  font-weight: 600;
+}
+
+.eventos-timeline .evento-detalle {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+.eventos-timeline .evento-tiempo {
+  font-weight: 600;
+  color: #495057;
+}
+
+.eventos-timeline .evento-fase {
+  background-color: #e9ecef;
+  text-align: center;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.9rem;
+}
+
+/* Estilos para eventos globales */
+.eventos-timeline .evento-global-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 5px;
+  color: #495057;
+  font-weight: 600;
+}
+
+.eventos-timeline .evento-detalle-global {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eventos-timeline tr.evento-global {
+  background-color: #f8f9fa;
+}
+
+.eventos-timeline tr.evento-global:hover {
+  background-color: #e9ecef;
+}
+
+/* Estilos para eventos pareados (tiro parado/parada) */
+.eventos-timeline tr.evento-pareado {
+  background-color: #f8f9fa;
+}
+
+.eventos-timeline tr.evento-pareado:hover {
+  background-color: #e9ecef;
+}
+
+.eventos-timeline .evento-pareado .equipo-local,
+.eventos-timeline .evento-pareado .equipo-visitante {
+  position: relative;
+}
+
+.eventos-timeline .evento-pareado .evento-detalle {
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Iconos de eventos */
+.evento-gol {
+  color: #28a745;
+}
+.evento-tiro-fallido {
+  color: #dc3545;
+}
+.evento-tiro-parado {
+  color: #dc3545;
+}
+.evento-falta {
+  color: #fd7e14;
+}
+.evento-exclusion {
+  color: #dc3545;
+}
+.evento-fin-exclusion {
+  color: #28a745;
+}
+.evento-entrada {
+  color: #20c997;
+}
+.evento-salida {
+  color: #6c757d;
+}
+.evento-tiempo-muerto {
+  color: #6610f2;
+}
+.evento-inicio-periodo {
+  color: #007bff;
+}
+.evento-fin-periodo {
+  color: #6c757d;
+}
+.evento-parada {
+  color: #17a2b8;
+}
+.evento-perdida {
+  color: #dc3545;
+}
+.evento-recuperacion {
+  color: #28a745;
+}
+.evento-7metros {
+  color: #fd7e14;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .eventos-timeline .evento-detalle {
+    display: none;
+  }
+
+  .eventos-timeline td {
+    padding: 8px 10px;
+  }
+
+  .eventos-timeline .evento-icon {
+    margin-right: 4px;
+    font-size: 1rem;
+  }
+
+  .eventos-timeline .evento-icon-right {
+    margin-left: 4px;
+  }
+
+  .eventos-timeline .evento-jugador {
+    font-size: 0.9rem;
+  }
+
+  .eventos-timeline .evento-detalle-global {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .eventos-timeline {
+    font-size: 0.85rem;
+  }
+
+  .eventos-timeline .evento-icon {
+    width: 18px;
+    font-size: 0.9rem;
+  }
+
+  .eventos-timeline .tiempo {
+    font-size: 0.85rem;
+  }
+
+  .eventos-timeline .resultado {
+    font-size: 0.95rem;
+  }
+}
+
+/* Estilos para eventos vacíos */
+.eventos-timeline .empty-state {
+  text-align: center;
+  padding: 30px 15px;
+  color: #6c757d;
+}
+
+.eventos-timeline .empty-state i {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.eventos-timeline .empty-state h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.eventos-timeline .empty-state p {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+/* Estilos para el filtro de eventos */
+.eventos-filtro {
+  margin-bottom: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.eventos-filtro label {
+  margin-right: 10px;
+  font-weight: 600;
+}
+
+.eventos-filtro select {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  min-width: 150px;
+}
+
+.eventos-filtro .btn-group {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .eventos-filtro {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .eventos-filtro .btn-group {
+    margin-left: 0;
+    margin-top: 10px;
+    width: 100%;
+    display: flex;
+  }
+
+  .eventos-filtro .btn-group .btn {
+    flex: 1;
+  }
+}

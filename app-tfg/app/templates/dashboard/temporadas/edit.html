@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Temporada - {{ temporada.nombre }}{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Editar Temporada</h1>
+        <p>Modifica los datos de la temporada</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-edit"></i> Datos de la Temporada</h3>
+    </div>
+    <div class="section-body">
+        <div class="form-container">
+            <form action="{{ url_for('temporada_routes.editar_temporada', username=username, temporada_id=temporada.id) }}" method="POST">
+                <div class="form-group">
+                    <label for="nombre"><i class="fas fa-tag"></i> Nombre de la temporada:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" value="{{ temporada.nombre }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion"><i class="fas fa-align-left"></i> Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="4">{{ temporada.descripcion }}</textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a href="/{{ username }}/temporada/{{ temporada.id }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

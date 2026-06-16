@@ -1,0 +1,54 @@
+.features-section {
+    display: flex;
+    justify-content: center; /* Centra los elementos en la línea */
+    flex-wrap: wrap; /* Permite que los elementos pasen a una nueva línea si no caben */
+    margin-top: 2rem;
+    gap: 2rem;
+    width: 100%; /* Aprovecha todo el ancho disponible */
+    max-width: 1200px; /* Evita que se vuelva demasiado ancho */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .feature-container {
+    flex: 1; /* Hace que todos los elementos ocupen el mismo espacio */
+    min-width: 280px; /* Tamaño mínimo para evitar que sean demasiado pequeños */
+    max-width: 350px; /* Evita que crezcan demasiado en pantallas grandes */
+  }
+  
+  .feature-box {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .feature-box i {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-box h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  
+  .feature-box p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-box .btn {
+    align-self: center;
+    margin-top: auto;
+  }
+  
+  

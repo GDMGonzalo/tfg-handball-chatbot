@@ -1,0 +1,125 @@
+version: "3.9"
+
+services:
+  app:
+    build: ./app
+    container_name: app
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=mikel
+      - MYSQL_PORT=3306
+      - MODEL_URL=http://model:5004
+      - SHARED_DIR=/shared/uploads
+    volumes:
+      - ./shared:/shared:rw
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      model:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:5000/healthz'); sys.exit(0)"]
+      interval: 10s
+      timeout: 4s
+      retries: 15
+
+  model:
+    build: ./model
+    container_name: model
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=mikel
+      - MYSQL_PORT=3306
+      - POSTPROCESS_URL=http://postprocess:5002/postprocesado
+      - SHARED_DIR=/shared/uploads
+      - TRACK_HIGH_THRESH=0.6
+      - TRACK_LOW_THRESH=0.1
+      - NEW_TRACK_THRESH=0.7
+      - TRACK_BUFFER=60
+      - MATCH_THRESH=0.8
+      - ASPECT_RATIO_THRESH=1.6
+      - MIN_BOX_AREA=10
+      - NMS_THRES=0.7
+      - MOT20=False
+      - WITH_REID=True
+      - PROXIMITY_THRESH=0.5
+      - APPEARANCE_THRESH=0.25
+    volumes:
+      - ./shared:/shared:rw
+    expose:
+      - "5004"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postprocess:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:5004/healthz'); sys.exit(0)"]
+      interval: 10s
+      timeout: 4s
+      retries: 15
+
+  postprocess:
+    build: ./postprocess
+    container_name: postprocess
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=mikel
+      - MYSQL_PORT=3306
+      - SHARED_DIR=/shared/uploads
+      - USE_SPLIT=False
+      - MIN_LEN=100
+      - EPS=0.7
+      - MIN_SAMPLES=4
+      - MAX_K=3
+      - USE_CONNECT=True
+      - SPATIAL_FACTOR=1.0
+      - MERGE_DIST_THRESH=0.4
+    volumes:
+      - ./shared:/shared:rw
+    expose:
+      - "5002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:5002/healthz'); sys.exit(0)"]
+      interval: 10s
+      timeout: 4s
+      retries: 15
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mikel
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_0900_ai_ci"
+    ]
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./restore.sql:/docker-entrypoint-initdb.d/restore.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -proot || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  mysql_data:

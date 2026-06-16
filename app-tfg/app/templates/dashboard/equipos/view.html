@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}{{ equipo.nombre }} - MIKEL{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="module-header">
+    <div>
+        <h1>{{ equipo.nombre }}</h1>
+        <p>Tipo: {{ equipo.tipo|capitalize }}</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-secondary" onclick="abrirModalEditar('{{ equipo.id }}', '{{ equipo.nombre }}', '{{ equipo.tipo }}')">
+            <i class="fas fa-edit"></i> Editar
+        </button>
+        <button type="button" class="btn btn-danger" onclick="confirmarEliminar('{{ equipo.id }}', '{{ equipo.nombre }}')">
+            <i class="fas fa-trash"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<!-- Información del equipo -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-info-circle"></i> Información</h3>
+    </div>
+    <div class="section-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Ligas:</span>
+                <div class="info-value">
+                    {% if ligas %}
+                        <div class="badge-container">
+                            {% for liga in ligas %}
+                                <a href="/{{ username }}/liga/{{ liga.id }}" class="badge badge-primary">{{ liga.nombre }}</a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <span class="text-muted">No participa en ligas</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Jugadores:</span>
+                <span class="info-value">{{ jugadores|length }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Partidos como local:</span>
+                <span class="info-value">{{ equipo.partidos_local|length }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Partidos como visitante:</span>
+                <span class="info-value">{{ equipo.partidos_visitante|length }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Jugadores del equipo -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-user-friends"></i> Jugadores</h3>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoJugadorModal">
+            <i class="fas fa-plus"></i> Nuevo Jugador
+        </button>
+    </div>
+    <div class="section-body">
+        {% if jugadores %}
+        <form id="form-jugadores" method="POST" action="/{{ username }}/equipo/{{ equipo.id }}/jugadores/actualizar">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Dorsal</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Rol</th>
+                            <th class="text-center">Capitán</th>
+                            <th>Posición</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for jugador in jugadores %}
+                            <tr class="jugador-row">
+                                <td>
+                                    <input type="number" name="dorsal_{{ jugador.id }}" value="{{ jugador.dorsal or '' }}" class="form-control form-control-sm" {% if jugador.rol == 'entrenador' %}disabled{% endif %}>
+                                </td>
+                                <td>
+                                    <input type="text" name="nombre_{{ jugador.id }}" value="{{ jugador.nombre }}" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" name="apellido_{{ jugador.id }}" value="{{ jugador.apellido }}" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <select name="rol_{{ jugador.id }}" class="form-control form-control-sm rol-select" data-jugador-id="{{ jugador.id }}">
+                                        <option value="jugador" {% if jugador.rol == 'jugador' %}selected{% endif %}>Jugador</option>
+                                        <option value="entrenador" {% if jugador.rol == 'entrenador' %}selected{% endif %}>Entrenador</option>
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    <div class="form-check d-flex justify-content-center">
+                                        <input class="form-check-input" type="checkbox" name="es_capitan_{{ jugador.id }}" value="1" {% if jugador.es_capitan %}checked{% endif %}>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select name="posicion_id_{{ jugador.id }}" class="form-control form-control-sm">
+                                        <option value="">Sin posición</option>
+                                        {% for posicion in posiciones %}
+                                            <option value="{{ posicion.id }}" {% if jugador.posicion_id == posicion.id %}selected{% endif %}>
+                                                {{ posicion.nombre }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-danger btn-eliminar" data-jugador-id="{{ jugador.id }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-actions text-center">
+                <button type="submit" class="btn btn-primary" id="guardar-todos">
+                    <i class="fas fa-save"></i> Guardar Todos los Cambios
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-user-friends"></i>
+            <h3>No hay jugadores</h3>
+            <p>Comienza añadiendo jugadores a tu equipo</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoJugadorModal">
+                <i class="fas fa-plus"></i> Nuevo Jugador
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para añadir nuevo jugador -->
+<div class="modal fade" id="nuevoJugadorModal" tabindex="-1" role="dialog" aria-labelledby="nuevoJugadorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nuevoJugadorModalLabel">Añadir Nuevo Jugador</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="POST" action="/{{ username }}/equipo/{{ equipo.id }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nombre"><i class="fas fa-user"></i> Nombre:</label>
+                                <input type="text" id="nombre" name="nombre" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="apellido"><i class="fas fa-user"></i> Apellido:</label>
+                                <input type="text" id="apellido" name="apellido" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dorsal"><i class="fas fa-tshirt"></i> Dorsal:</label>
+                                <input type="number" id="dorsal" name="dorsal" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="rol"><i class="fas fa-user-tag"></i> Rol:</label>
+                                <select id="rol" name="rol" class="form-control" onchange="toggleDorsal()">
+                                    <option value="jugador" selected>Jugador</option>
+                                    <option value="entrenador">Entrenador</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="posicion_id"><i class="fas fa-running"></i> Posición:</label>
+                                <select id="posicion_id" name="posicion_id" class="form-control">
+                                    <option value="">Sin posición</option>
+                                    {% for posicion in posiciones %}
+                                        <option value="{{ posicion.id }}">
+                                            {{ posicion.nombre }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="d-block"><i class="fas fa-star"></i> Capitán:</label>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="es_capitan_nuevo" name="es_capitan" value="1">
+                                    <label class="custom-control-label" for="es_capitan_nuevo">Marcar como capitán del equipo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Añadir Jugador</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de edición de equipo -->
+<div class="modal fade" id="editarEquipoModal" tabindex="-1" role="dialog" aria-labelledby="editarEquipoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarEquipoModalLabel">Editar Equipo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="formEditarEquipo" method="POST">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="nombre_equipo"><i class="fas fa-users"></i> Nombre del Equipo:</label>
+                        <input type="text" id="nombre_equipo" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipo_equipo"><i class="fas fa-venus-mars"></i> Tipo:</label>
+                        <select id="tipo_equipo" name="tipo" class="form-control" required>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                            <option value="mixto">Mixto</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar equipo -->
+<div class="modal fade" id="eliminarModal" tabindex="-1" role="dialog" aria-labelledby="eliminarModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eliminarModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar el equipo <strong id="equipo-nombre"></strong>?</p>
+                <p class="text-danger">Esta acción eliminará también todos los jugadores y su participación en ligas.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="form-eliminar" method="POST">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar jugador -->
+<div class="modal fade" id="eliminarJugadorModal" tabindex="-1" role="dialog" aria-labelledby="eliminarJugadorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="eliminarJugadorModalLabel"><i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que quieres eliminar a este jugador?</p>
+                <p class="text-danger"><strong>Atención:</strong> Esta acción eliminará también todas las estadísticas asociadas a este jugador y no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmarEliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para habilitar/deshabilitar el campo dorsal según el rol
+    function toggleDorsal() {
+        const rol = document.getElementById('rol').value;
+        const dorsalField = document.getElementById('dorsal');
+        if (rol === 'entrenador') {
+            dorsalField.value = '';
+            dorsalField.disabled = true;
+            dorsalField.required = false;
+        } else {
+            dorsalField.disabled = false;
+            dorsalField.required = true;
+        }
+    }
+
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Manejar cambios en los selectores de rol
+        document.querySelectorAll('.rol-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const jugadorId = this.getAttribute('data-jugador-id');
+                const dorsalInput = document.querySelector(`input[name="dorsal_${jugadorId}"]`);
+                
+                if (this.value === 'entrenador') {
+                    dorsalInput.value = '';
+                    dorsalInput.disabled = true;
+                } else {
+                    dorsalInput.disabled = false;
+                }
+            });
+            
+            // Inicializar el estado de los campos de dorsal
+            const event = new Event('change');
+            select.dispatchEvent(event);
+        });
+
+        // Variables para el modal de eliminación de jugador
+        let jugadorIdAEliminar = null;
+        const modal = $('#eliminarJugadorModal');
+
+        // Configurar los botones de eliminar jugador
+        document.querySelectorAll('.btn-eliminar').forEach(btn => {
+            btn.addEventListener('click', function() {
+                jugadorIdAEliminar = this.getAttribute('data-jugador-id');
+                modal.modal('show');
+            });
+        });
+
+        // Configurar el botón de confirmar eliminación de jugador
+        document.getElementById('confirmarEliminar').addEventListener('click', function() {
+            if (jugadorIdAEliminar) {
+                fetch(`/{{ username }}/equipo/{{ equipo.id }}/jugador/${jugadorIdAEliminar}/eliminar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        modal.modal('hide');
+                        window.location.reload();
+                    } else {
+                        alert("Hubo un error al eliminar el jugador.");
+                    }
+                });
+            }
+        });
+
+        // Inicializar el estado del campo dorsal en el formulario de nuevo jugador
+        toggleDorsal();
+    });
+    
+    function abrirModalEditar(equipoId, nombreEquipo, tipoEquipo) {
+        // Configurar el formulario
+        document.getElementById('formEditarEquipo').action = '/{{ username }}/equipo/' + equipoId + '/editar';
+        document.getElementById('nombre_equipo').value = nombreEquipo;
+        document.getElementById('tipo_equipo').value = tipoEquipo;
+        
+        // Abrir el modal
+        $('#editarEquipoModal').modal('show');
+    }
+    
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('equipo-nombre').textContent = nombre;
+        document.getElementById('form-eliminar').action = '/{{ username }}/equipo/' + id + '/eliminar';
+        $('#eliminarModal').modal('show');
+    }
+</script>
+{% endblock %}

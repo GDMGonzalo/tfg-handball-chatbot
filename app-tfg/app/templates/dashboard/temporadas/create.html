@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Temporada - MIKEL{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <div>
+        <h1>Nueva Temporada</h1>
+        <p>Crea una nueva temporada deportiva</p>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fas fa-calendar-plus"></i> Datos de la Temporada</h3>
+    </div>
+    <div class="section-body">
+        <div class="form-container">
+            <form action="{{ url_for('temporada_routes.nueva_temporada', username=username) }}" method="POST">
+                <div class="form-group">
+                    <label for="nombre"><i class="fas fa-tag"></i> Nombre de la temporada:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required placeholder="Ej: Temporada 2023-2024">
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion"><i class="fas fa-align-left"></i> Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" rows="4" placeholder="Describe el propósito o características de esta temporada"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Temporada
+                    </button>
+                    <a href="/{{ username }}/temporadas" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Chatbot Deportivo{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chatbot-page">
+    <div class="chatbot-header">
+        <h1>Asistente estadístico</h1>
+        <p>Haz preguntas sobre goles, asistencias y victorias de los equipos.</p>
+        <a href="/{{ username }}/dashboard" class="btn btn-secondary btn-sm">Volver al dashboard</a>
+    </div>
+
+    <div class="chatbot-container" id="chatbotRoot" data-query-url="{{ url_for('chatbot.chatbot_query', username=username) }}">
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message bot">
+                <strong>Hola.</strong> Pregúntame sobre estadísticas de balonmano:
+            </div>
+        </div>
+
+        <div class="chatbot-input-area">
+            <input
+                type="text"
+                id="questionInput"
+                class="form-control"
+                placeholder="Escribe tu pregunta..."
+                autocomplete="off"
+            >
+            <button id="sendBtn" class="btn btn-primary">Enviar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+{% endblock %}

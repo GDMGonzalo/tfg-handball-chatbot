@@ -1,0 +1,289 @@
+/* Estilos para la página de ver equipo */
+.equipo-container {
+  max-width: 1300px;
+  margin: 2rem auto;
+  padding: 20px;
+}
+
+/* Cabecera con título y acciones */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #007bff;
+}
+
+.header-section h1 {
+  font-size: 2.2rem;
+  color: #333;
+  margin: 0;
+}
+
+.equipo-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Información del equipo */
+.equipo-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.info-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+.info-label {
+  font-weight: bold;
+  color: #555;
+  margin-right: 10px;
+}
+
+.info-value {
+  color: #333;
+}
+
+.equipo-info .ligas-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.equipo-info .ligas-list li {
+  display: inline-block;
+}
+
+.equipo-info .ligas-list a {
+  color: #007bff;
+  text-decoration: none;
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  background-color: #e9f5ff;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.equipo-info .ligas-list a:hover {
+  background-color: #cce5ff;
+  text-decoration: none;
+}
+
+/* Tarjetas */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #333;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+/* Tabla de jugadores */
+.jugadores-card {
+  background-color: #fff;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #343a40;
+  color: white;
+  font-weight: bold;
+  border-bottom: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.jugador-row:hover {
+  background-color: #f8f9fa;
+}
+
+.form-control {
+  font-size: 0.9rem;
+  padding: 0.375rem 0.5rem;
+}
+
+/* Formulario para añadir jugadores */
+.nuevo-jugador-card {
+  background-color: #fff;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+/* Botones */
+.btn {
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  color: #fff;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+/* Modal de confirmación */
+.modal-header.bg-danger {
+  background-color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .header-section h1 {
+    font-size: 1.8rem;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .equipo-info {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .info-item {
+    width: 100%;
+  }
+}
+
+/* Corregir desplegables en la tabla de jugadores */
+.jugador-row select,
+.jugador-row .form-control {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Asegurar que las celdas de la tabla tengan suficiente ancho */
+.table th,
+.table td {
+  min-width: 100px;
+}
+
+/* Ajustar el ancho de las columnas específicas */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 80px; /* Dorsal */
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2),
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 150px; /* Nombre y Apellido */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4),
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 120px; /* Rol y Posición */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 80px; /* Capitán */
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 80px; /* Acciones */
+}

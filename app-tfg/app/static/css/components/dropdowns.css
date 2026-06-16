@@ -1,0 +1,88 @@
+/* Estilos específicos para corregir los desplegables en todo el proyecto */
+
+/* Estilos base para todos los desplegables */
+select,
+select.form-control,
+.custom-select,
+.form-select {
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  min-width: 120px;
+  max-width: 100%;
+  height: auto;
+  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  appearance: auto;
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+  /* Eliminamos la imagen de fondo duplicada y dejamos que Bootstrap la maneje */
+  background-image: none;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+/* Asegurar que las opciones del desplegable muestren el texto completo */
+select option,
+select.form-control option,
+.custom-select option,
+.form-select option {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  width: auto;
+  min-width: 100%;
+  padding: 5px;
+}
+
+/* Corregir el tamaño de los desplegables en las tablas */
+.table select,
+.table select.form-control,
+.table .custom-select,
+.table .form-select {
+  min-width: 120px;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Corregir el tamaño de los desplegables en los formularios de filtro */
+.filter-form select,
+.filter-form select.form-control,
+.filter-form .custom-select,
+.filter-form .form-select {
+  width: 100%;
+}
+
+/* Corregir el tamaño de los contenedores de los desplegables */
+.form-group,
+.mb-3 {
+  width: 100% !important;
+}
+
+/* Corregir el tamaño de los desplegables en los modales */
+.modal select,
+.modal select.form-control,
+.modal .custom-select,
+.modal .form-select {
+  width: 100%;
+}
+
+/* Corregir el tamaño de los desplegables en los formularios de edición en línea */
+td select,
+td select.form-control,
+td .custom-select,
+td .form-select {
+  min-width: 100%;
+  max-width: 100%;
+}
+
+/* Asegurar que los desplegables sean visibles en dispositivos móviles */
+@media (max-width: 768px) {
+  select,
+  select.form-control,
+  .custom-select,
+  .form-select {
+    font-size: 16px; /* Evitar zoom en iOS */
+  }
+}

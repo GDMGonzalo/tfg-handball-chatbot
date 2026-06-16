@@ -1,0 +1,537 @@
+/* Panel de eventos */
+.event-annotation .events-panel {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  padding: 10px;
+  height: auto;
+  overflow-y: auto;
+}
+
+.event-annotation .events-panel h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 5px;
+}
+
+/* Contenedor principal */
+.event-annotation .match-container {
+  display: grid;
+  grid-template-columns: 1fr 2.7fr 1fr;
+  gap: 10px;
+  height: calc(100vh - 150px);
+  max-height: 800px;
+}
+
+/* Columnas de equipos */
+.event-annotation .team-column {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* Alineación específica para equipo local (izquierda) */
+.event-annotation .team-column.local {
+  margin-right: auto; /* Empuja el contenido hacia la izquierda */
+}
+
+/* Alineación específica para equipo visitante (derecha) */
+.event-annotation .team-column.visitante {
+  margin-left: auto; /* Empuja el contenido hacia la derecha */
+}
+
+/* Columna de video */
+.event-annotation .video-column {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+}
+
+/* Contenedor de video */
+.event-annotation .video-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* Relación de aspecto 16:9 */
+  background-color: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Video player */
+.event-annotation .video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Controles de video */
+.event-annotation .minimal-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  padding: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.event-annotation .video-wrapper:hover .minimal-controls {
+  opacity: 1;
+}
+
+/* Barra de progreso mejorada */
+.event-annotation .progress-container {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.event-annotation .progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  border-radius: 4px;
+  position: relative;
+}
+
+.event-annotation .progress-bar::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.event-annotation .progress-container:hover .progress-bar::after {
+  opacity: 1;
+}
+
+/* Preview de tiempo */
+.event-annotation .time-preview {
+  position: absolute;
+  bottom: 15px;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* Selector de tiempo de salto */
+.event-annotation .skip-time-select {
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 12px;
+  margin-right: 5px;
+}
+
+/* Jugadores */
+.event-annotation .players-section {
+  margin-bottom: 15px;
+}
+
+.event-annotation .players-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.event-annotation .players-header h5 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.event-annotation .team-btn {
+  font-size: 12px;
+  padding: 3px 6px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.event-annotation .players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+/* Tarjetas de jugadores */
+.event-annotation .player-card {
+  background-color: white;
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.event-annotation .player-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.event-annotation .player-card.selected {
+  background-color: #e3f2fd;
+  border: 2px solid #007bff;
+}
+
+.event-annotation .player-number {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.event-annotation .player-name {
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Categorías de eventos */
+.event-annotation .event-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.event-annotation .category-btn {
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-width: 70px;
+  text-align: center;
+}
+
+.event-annotation .category-btn i {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.event-annotation .category-btn:hover {
+  background-color: #e9ecef;
+}
+
+.event-annotation .category-btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Estilos para la categoría de penaltis */
+.category-btn[data-category-name="Penaltis"] {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.category-btn[data-category-name="Penaltis"]:hover {
+  background-color: #f1b0b7;
+}
+
+.category-btn[data-category-name="Penaltis"].active {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+/* Tipos de eventos */
+.event-annotation .event-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.event-annotation .event-type-btn {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.event-annotation .event-type-btn:hover {
+  background-color: #dee2e6;
+}
+
+.event-annotation .event-type-btn.active {
+  background-color: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+/* Lista de eventos registrados */
+.event-annotation .events-list {
+  margin-top: 10px;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 1px solid #dee2e6;
+  padding-top: 8px;
+}
+
+.event-annotation .event-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 12px;
+}
+
+.event-annotation .event-item:hover {
+  background-color: #f1f3f5;
+}
+
+.event-annotation .event-time {
+  font-weight: bold;
+  min-width: 40px;
+}
+
+.event-annotation .event-description {
+  flex-grow: 1;
+  margin: 0 8px;
+}
+
+.event-annotation .event-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.event-annotation .event-action-btn {
+  background: none;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 2px;
+}
+
+.event-annotation .event-action-btn:hover {
+  color: #007bff;
+}
+
+.event-annotation .event-action-btn.delete:hover {
+  color: #dc3545;
+}
+
+/* Estilos para los eventos de penaltis en la lista */
+.event-item[data-event-type="Penaltis"] .event-time {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Estilos para el botón de deshacer */
+.undo-button-container {
+  text-align: right;
+  margin-bottom: 10px;
+}
+
+.undo-button {
+  padding: 5px 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: background-color 0.2s ease;
+}
+
+.undo-button:hover {
+  background-color: #e2e6ea;
+}
+
+.undo-button i {
+  margin-right: 5px;
+}
+
+/* Instrucciones */
+.event-annotation .event-instructions {
+  background-color: #e9ecef;
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #495057;
+}
+
+/* Estilos para notificaciones */
+.event-annotation .event-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  color: white;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.event-annotation .event-notification.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Diálogo de confirmación */
+.event-annotation .confirm-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  z-index: 1100;
+  max-width: 400px;
+  width: 90%;
+  animation: fadeIn 0.2s ease;
+}
+
+.event-annotation .confirm-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.event-annotation .confirm-dialog-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #343a40;
+}
+
+.event-annotation .confirm-dialog-message {
+  margin-bottom: 20px;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.event-annotation .confirm-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.event-annotation .confirm-dialog-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.event-annotation .confirm-dialog-button.cancel {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.event-annotation .confirm-dialog-button.cancel:hover {
+  background-color: #e9ecef;
+}
+
+.event-annotation .confirm-dialog-button.confirm {
+  background-color: #dc3545;
+  color: white;
+}
+
+.event-annotation .confirm-dialog-button.confirm:hover {
+  background-color: #c82333;
+}
+
+/* Añadir estilos para los nuevos eventos */
+.evento-tarjeta-roja {
+  color: #e53e3e;
+}
+
+.evento-tarjeta-amarilla {
+  color: #ecc94b;
+}
+
+.evento-portero-jugador {
+  color: #4299e1;
+}
+
+.evento-asistencia {
+  color: #38a169;
+}
+
+.evento-defensa {
+  color: #2c5282;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .event-annotation .match-container {
+    grid-template-columns: 1fr 1.5fr 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .event-annotation .match-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    height: auto;
+  }
+
+  .event-annotation .team-column,
+  .event-annotation .video-column {
+    max-height: none;
+  }
+}

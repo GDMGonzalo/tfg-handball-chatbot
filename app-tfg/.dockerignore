@@ -1,0 +1,33 @@
+# Carpetas de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Archivos de configuración locales
+*.env
+
+# Git y otros metadatos
+.git/
+.gitignore
+.dockerignore
+
+# Archivos temporales del sistema
+*.log
+*.tmp
+*.swp
+
+YOLOX_outputs/
+.vscode
+demo_media/
+
+# Carpeta de almacenamiento compartido (no debe ir dentro de la imagen)
+Almacenamiento/
+*.mp4
+
+
